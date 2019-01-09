@@ -9,7 +9,6 @@ host='192.168.150.163'
 db='unifin'
 
 @hug.get(examples="user=usrambwen&password=acces0w3n")
-@hug.local()
 
 def setRFM(user: hug.types.text, password: hug.types.text, hug_timer=3):
 
@@ -37,7 +36,6 @@ def setRFM(user: hug.types.text, password: hug.types.text, hug_timer=3):
 
 
 @hug.get(examples="name=Jhon Doe&age=30")
-@hug.local()
 
 def say_hello(name: hug.types.text, age: hug.types.number, hug_timer=3):
     """Decimos hola al usuario y calculamos su año de nacimiento"""
