@@ -5,24 +5,60 @@ import hug
 import pymysql
 import pandas as pd
 
-host='192.168.150.163'
-db='unifin'
+host='localhost'
+db='RFM_unifin'
+user_db='root'
+pass_db=''
 
-@hug.get(examples="user=usrambwen&password=acces0w3n")
 
-def setRFM(user: hug.types.text, password: hug.types.text, hug_timer=3):
+@hug.get()
+
+def setRFM():
 
 	"""API que genera RFM para todas las cuentas"""
 
-	conn=pymysql.connect(host=host, user=user, passwd=password, db=db)
+	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	
 	cur=conn.cursor()
 	
-	query="SELECT * FROM accounts where id='bb53237e-f9b1-11e8-8502-00155da06f04';"
+	query="SELECT * FROM Transacciones;"
+
+	cur.execute(query)
+
+	res = cur.fetchall()
+	
+	cur.close()
+	
+	conn.close()
+
+	if(len(res)>0):
+
+		"""Creando Dataset"""
+
+
+
+
+
+
+
+
+@hug.get(examples="id_user=bb53237e-f9b1-11e8-8502-00155da06f04")
+
+def predictRFM(id_user: hug.types.text):
+
+	"""API que predice RFM para una cuenta en especifico"""
+
+	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+	
+	cur=conn.cursor()
+	
+	query="SELECT * FROM accounts where id='"+id_user+"';"
 
 	cur.execute(query)
 	
-	for row in cur:
+	res = cur.fetchall()
+
+	for row in res:
 		print(row[0])
 	
 	cur.close()
@@ -32,15 +68,3 @@ def setRFM(user: hug.types.text, password: hug.types.text, hug_timer=3):
 	return 'Conexion Exitosa'
 
 	#return {'message': 'Happy {0} Birthday {1}!'.format(age, name),'took': float(hug_timer)}
-
-
-
-@hug.get(examples="name=Jhon Doe&age=30")
-
-def say_hello(name: hug.types.text, age: hug.types.number, hug_timer=3):
-    """Decimos hola al usuario y calculamos su año de nacimiento"""
-    year_of_birth = datetime.datetime.now().year - age
-    return {
-        'message': "Hola {0}, naciste el año {1}".format(name, year_of_birth),
-        'took': float(hug_timer)
-    }

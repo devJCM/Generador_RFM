@@ -1,5 +1,4 @@
-Id Cliente,Recencia,,,Frecuencia,,Monto,,RFM: 1,,,
-,Compra mas reciente,Recencia en días,PUNTOS_R,Número de compras (Tickets),PUNTOS_F,Total de compras (Monto),PUNTOS_M,Puntos,Segmentación 1,Segmentación 2,Segmentación 3
+Cuenta,Compra mas reciente,Recencia en días,PUNTOS_R,Número de compras (Tickets),PUNTOS_F,Total de compras (Monto),PUNTOS_M,Puntos,Segmentación 1,Segmentación 2,Segmentación 3
 1,2015-12-16,1120,4,10,5,"1.000,00",5,"4,75",Top,Oro,Buenos
 2,2015-12-14,1122,4,2,2,"490,00",3,3,Spenders,Plata,Buenos
 3,2015-12-13,1123,4,7,4,"287,00",2,3,Spenders,Plata,Buenos
