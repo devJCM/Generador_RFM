@@ -1,10 +1,11 @@
 
-"""APIs RFM-unifin"""
+"""API Generador-RFM"""
 
 import hug
 import pymysql
 import pandas as pd
 import numpy as np
+import json
 from sklearn.cluster import KMeans
 
 host='localhost'
@@ -22,6 +23,11 @@ target_M=''
 def setRFM():
 
 	"""API que genera RFM para todas las cuentas"""
+
+	post='{"ponderaciones":[{"recencia":25},{"frecuencia":25},{"monto":50}],"segmentos":[{"nombre":"bronce"},{"nombre":"plata"},{"nombre":"oro"}]}'
+	params=json.loads(post)
+	segmentos=params['segmentos']
+	ponderaciones=params['ponderaciones']
 
 	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	
@@ -77,8 +83,9 @@ def setRFM():
 
 
 	last_dataset=dataset_R.merge(dataset_F,on=headers).merge(dataset_M,on=headers)
+	final_dataset=setCatego(last_dataset,segmentos,ponderaciones)
 
-	return last_dataset
+	return final_dataset
 
 
 def setRecencia(first_dataset):
@@ -216,6 +223,45 @@ def setMonto(first_dataset):
 	return dataset		
 
 
+def setCatego(last_dataset,segmentosx,ponderacionesx):
+	dataset=last_dataset
+	segmentos=segmentosx
+	ponderaciones=ponderacionesx
+
+	dataset['ponderacion']=dataset['ponderacion']=((dataset['R']*ponderaciones[0]['recencia'])+(dataset['F']*ponderaciones[1]['frecuencia'])+(dataset['M']*ponderaciones[2]['monto']))/100
+
+	model_RFM=KMeans(n_clusters=len(segmentos)).fit(np.array(dataset[['ponderacion']]))
+	clust_RFM=pd.Series(model_RFM.labels_)
+	dataset['p_RFM']=clust_RFM
+
+	lim_clusts=[]
+	for i in range(0,len(segmentos)):
+	    x=dataset[dataset['p_RFM']==i]
+	    lim_clusts.append(x['ponderacion'].max())
+
+	lim_clusts.sort()  		
+
+	lim1=lim_clusts[0]
+	lim2=lim_clusts[1]
+	lim3=lim_clusts[2]
+
+	dataset.loc[(dataset['ponderacion'] <= lim1), 'Categoria'] = segmentos[0]['nombre']
+	dataset.loc[(dataset['ponderacion'] <= lim2) & (dataset['ponderacion'] > lim1), 'Categoria'] = segmentos[1]['nombre']
+	dataset.loc[(dataset['ponderacion'] <= lim3) & (dataset['ponderacion'] > lim2), 'Categoria'] = segmentos[2]['nombre']
+
+	dataset=dataset.drop(['p_RFM'], axis=1)
+
+	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+	cur=conn.cursor()
+	for index,row in dataset.iterrows():
+		query="Update Transacciones set Tag='"+row['Categoria']+"' where Cuenta="+str(int(row[id_RFM]))+";"
+		cur.execute(query)
+
+	conn.commit()
+	cur.close()
+	conn.close()		
+
+	return dataset
 
 
 @hug.get(examples="id_user=bb53237e-f9b1-11e8-8502-00155da06f04")
