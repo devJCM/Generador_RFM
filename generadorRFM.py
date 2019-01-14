@@ -8,10 +8,16 @@ import numpy as np
 import json
 from sklearn.cluster import KMeans
 
+host_o='localhost'
+db_o='unifin'
+user_db_o='root'
+pass_db_o=''
+
 host='localhost'
-db='RFM_unifin'
+db='RFM_Generator'
 user_db='root'
 pass_db=''
+table='rfm_unifin'
 
 id_RFM=''
 target_R=''
@@ -20,7 +26,7 @@ target_M=''
 
 @hug.get()
 
-def setRFM():
+def setRFM(hug_timer=3):
 
 	"""API que genera RFM para todas las cuentas"""
 
@@ -29,11 +35,11 @@ def setRFM():
 	segmentos=params['segmentos']
 	ponderaciones=params['ponderaciones']
 
-	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+	conn=pymysql.connect(host=host_o, user=user_db_o, passwd=pass_db_o, db=db_o)
 	
 	cur=conn.cursor()
 	
-	query="SELECT Cuenta,Last_date,Num_Tickets,Monto FROM Transacciones;"
+	query="SELECT a.id,a.name,max(op.date_entered) as 'Recencia' ,count(op.amount) as 'Tickets',AVG(op.amount) as 'Monto' FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id group by a.id;"
 
 	cur.execute(query),
 
@@ -43,7 +49,7 @@ def setRFM():
 
 	conn.close()
 
-	headers=['Id','Date','Frecuency','Money']
+	headers=['id','name','Recencia','Tickets','Monto']
 
 	global id_RFM
 	global target_R
@@ -51,9 +57,9 @@ def setRFM():
 	global target_M
 
 	id_RFM=headers[0]
-	target_R=headers[1]
-	target_F=headers[2]
-	target_M=headers[3]
+	target_R=headers[2]
+	target_F=headers[3]
+	target_M=headers[4]
 	
 	dataset_dummy={}
 	filas=0
@@ -71,10 +77,9 @@ def setRFM():
 
 	first_dataset=pd.DataFrame(dataset_dummy)
 
-	first_dataset[target_R]=first_dataset[target_R].astype(str).str.replace('-', '')
+	first_dataset[target_R]=first_dataset[target_R].astype(str).str.replace('\D', '')
 	first_dataset[target_R]=first_dataset[target_R].astype(str).astype(int)
 
-	#columns=first_dataset.columns.values.tolist()
 
 	#Llamada a los 3 servicios
 	dataset_R=setRecencia(first_dataset)
@@ -85,14 +90,18 @@ def setRFM():
 	last_dataset=dataset_R.merge(dataset_F,on=headers).merge(dataset_M,on=headers)
 	final_dataset=setCatego(last_dataset,segmentos,ponderaciones)
 
+	print("Todo el proceso tomó "+str(float(hug_timer)))
+
 	return final_dataset
 
 
 def setRecencia(first_dataset):
+	print('Entro a setRecencia')
 	dataset=first_dataset
 
 	dataset=dataset.sort_values(by=target_R,ascending=True)
 	dataset = dataset.reset_index(drop=True)
+	dataset[target_R]=dataset[target_R].fillna(dataset[target_R].mean())
 
 	model_r=KMeans(n_clusters=5).fit(dataset[[target_R]])
 	clust_r=pd.Series(model_r.labels_)
@@ -125,7 +134,7 @@ def setRecencia(first_dataset):
 	cur=conn.cursor()
 
 	for index,row in dataset.iterrows():
-		query="Update Transacciones set R="+str(int(row['R']))+" where Cuenta="+str(int(row[id_RFM]))+";"
+		query="Update "+table+" set R="+str(int(row['R']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
 		cur.execute(query)
 
 	conn.commit()
@@ -136,10 +145,12 @@ def setRecencia(first_dataset):
 
 
 def setFrecuencia(first_dataset):
+	print('Entro a setFrecuencia')
 	dataset=first_dataset
 
 	dataset=dataset.sort_values(by=target_F,ascending=True)
 	dataset = dataset.reset_index(drop=True)
+	dataset[target_F]=dataset[target_F].fillna(dataset[target_F].mean())
 
 	model_f=KMeans(n_clusters=5).fit(dataset[[target_F]])
 	clust_f=pd.Series(model_f.labels_)
@@ -169,7 +180,7 @@ def setFrecuencia(first_dataset):
 
 	cur=conn.cursor()
 	for index,row in dataset.iterrows():
-		query="Update Transacciones set F="+str(int(row['F']))+" where Cuenta="+str(int(row[id_RFM]))+";"
+		query="Update "+table+" set F="+str(int(row['F']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
 		cur.execute(query)
 
 	conn.commit()
@@ -180,10 +191,12 @@ def setFrecuencia(first_dataset):
 
 
 def setMonto(first_dataset):
+	print('Entro a setMonto')
 	dataset=first_dataset
 
 	dataset=dataset.sort_values(by=target_M,ascending=True)
 	dataset = dataset.reset_index(drop=True)
+	dataset[target_M]=dataset[target_M].fillna(dataset[target_M].mean())
 
 	model_m=KMeans(n_clusters=5).fit(dataset[[target_M]])
 	clust_m=pd.Series(model_m.labels_)
@@ -213,7 +226,7 @@ def setMonto(first_dataset):
 
 	cur=conn.cursor()
 	for index,row in dataset.iterrows():
-		query="Update Transacciones set M="+str(int(row['M']))+" where Cuenta="+str(int(row[id_RFM]))+";"
+		query="Update "+table+" set M="+str(int(row['M']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
 		cur.execute(query)
 
 	conn.commit()
@@ -224,6 +237,7 @@ def setMonto(first_dataset):
 
 
 def setCatego(last_dataset,segmentosx,ponderacionesx):
+	print('Entro a setCatego')
 	dataset=last_dataset
 	segmentos=segmentosx
 	ponderaciones=ponderacionesx
@@ -254,7 +268,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	cur=conn.cursor()
 	for index,row in dataset.iterrows():
-		query="Update Transacciones set Tag='"+row['Categoria']+"' where Cuenta="+str(int(row[id_RFM]))+";"
+		query="Update "+table+" set Categoria='"+row['Categoria']+"' where "+id_RFM+"='"+row[id_RFM]+"';"
 		cur.execute(query)
 
 	conn.commit()
@@ -265,6 +279,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 
 
 @hug.get(examples="id_user=bb53237e-f9b1-11e8-8502-00155da06f04")
+
 
 def predictRFM(id_user: hug.types.text):
 
