@@ -255,13 +255,19 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 
 	lim_clusts.sort()  		
 
-	lim1=lim_clusts[0]
-	lim2=lim_clusts[1]
-	lim3=lim_clusts[2]
+	limits={}
+	for index,i in enumerate(lim_clusts):
+	    key = 'limit'+str(index+1)
+	    value = i
+	    limits[key] = value
 
-	dataset.loc[(dataset['ponderacion'] <= lim1), 'Categoria'] = segmentos[0]['nombre']
-	dataset.loc[(dataset['ponderacion'] <= lim2) & (dataset['ponderacion'] > lim1), 'Categoria'] = segmentos[1]['nombre']
-	dataset.loc[(dataset['ponderacion'] <= lim3) & (dataset['ponderacion'] > lim2), 'Categoria'] = segmentos[2]['nombre']
+	for index,j in enumerate(limits):
+	    if j=='limit1':
+	    	dataset.loc[(dataset['ponderacion'] <= int(limits[j])), 'Categoria'] = segmentos[index]['nombre']
+	    	temp=limits[j]
+	    else:
+	    	dataset.loc[(dataset['ponderacion'] <= int(limits[j])) & (dataset['Categoria'] > int(temp)), 'p_m'] = segmentos[index]['nombre']
+	    	temp=limits[j]
 
 	dataset=dataset.drop(['p_RFM'], axis=1)
 
