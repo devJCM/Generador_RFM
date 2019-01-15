@@ -26,7 +26,7 @@ target_M=''
 
 @hug.get()
 
-def setRFM(hug_timer=3):
+def setRFM():
 
 	"""API que genera RFM para todas las cuentas"""
 
@@ -89,8 +89,6 @@ def setRFM(hug_timer=3):
 
 	last_dataset=dataset_R.merge(dataset_F,on=headers).merge(dataset_M,on=headers)
 	final_dataset=setCatego(last_dataset,segmentos,ponderaciones)
-
-	print("Todo el proceso tomó "+str(float(hug_timer)))
 
 	return final_dataset
 
@@ -266,7 +264,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	    	dataset.loc[(dataset['ponderacion'] <= int(limits[j])), 'Categoria'] = segmentos[index]['nombre']
 	    	temp=limits[j]
 	    else:
-	    	dataset.loc[(dataset['ponderacion'] <= int(limits[j])) & (dataset['Categoria'] > int(temp)), 'p_m'] = segmentos[index]['nombre']
+	    	dataset.loc[(dataset['ponderacion'] <= int(limits[j])) & (dataset['ponderacion'] > int(temp)), 'Categoria'] = segmentos[index]['nombre']
 	    	temp=limits[j]
 
 	dataset=dataset.drop(['p_RFM'], axis=1)
@@ -274,7 +272,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	cur=conn.cursor()
 	for index,row in dataset.iterrows():
-		query="Update "+table+" set Categoria='"+row['Categoria']+"' where "+id_RFM+"='"+row[id_RFM]+"';"
+		query="Update "+table+" set Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+row[id_RFM]+"';"
 		cur.execute(query)
 
 	conn.commit()
