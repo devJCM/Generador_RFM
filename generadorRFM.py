@@ -6,6 +6,8 @@ import pymysql
 import pandas as pd
 import numpy as np
 import json
+import threading
+import queue
 from sklearn.cluster import KMeans
 
 host_o='localhost'
@@ -80,20 +82,40 @@ def setRFM():
 	first_dataset[target_R]=first_dataset[target_R].astype(str).str.replace('\D', '')
 	first_dataset[target_R]=first_dataset[target_R].astype(str).astype(int)
 
-
+	queue_R = queue.Queue()
+	queue_F = queue.Queue()
+	queue_M = queue.Queue()
 	#Llamada a los 3 servicios
-	dataset_R=setRecencia(first_dataset)
-	dataset_F=setFrecuencia(first_dataset)
-	dataset_M=setMonto(first_dataset)
+	th_R = threading.Thread(target=setRecencia, args=(first_dataset,queue_R))
+	th_F = threading.Thread(target=setFrecuencia, args=(first_dataset,queue_F))
+	th_M = threading.Thread(target=setMonto, args=(first_dataset,queue_M))
 
+	th_R.start()
+	th_F.start()
+	th_M.start()
+
+	th_R.join()
+	th_F.join()
+	th_M.join()
+
+
+	dataset_R=queue_R.get()
+	dataset_F=queue_F.get()
+	dataset_M=queue_M.get()
+
+	#dataset_R=setRecencia(first_dataset)
+	#dataset_F=setFrecuencia(first_dataset)
+	#dataset_M=setMonto(first_dataset)
 
 	last_dataset=dataset_R.merge(dataset_F,on=headers).merge(dataset_M,on=headers)
+	#last_dataset=queue_R.merge(queue_F,on=headers).merge(queue_M,on=headers)
+
 	final_dataset=setCatego(last_dataset,segmentos,ponderaciones)
 
 	return final_dataset
 
 
-def setRecencia(first_dataset):
+def setRecencia(first_dataset,out_queue):
 	print('Entro a setRecencia')
 	dataset=first_dataset
 
@@ -128,21 +150,22 @@ def setRecencia(first_dataset):
 	dataset=dataset.drop(['p_r'], axis=1)
 
 
-	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-	cur=conn.cursor()
+	conn_r=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+	cur_r=conn_r.cursor()
 
 	for index,row in dataset.iterrows():
 		query="Update "+table+" set R="+str(int(row['R']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
-		cur.execute(query)
+		cur_r.execute(query)
 
-	conn.commit()
-	cur.close()
-	conn.close()
+	conn_r.commit()
+	cur_r.close()
+	conn_r.close()
 
-	return dataset
+	#return dataset
+	out_queue.put(dataset)
 
 
-def setFrecuencia(first_dataset):
+def setFrecuencia(first_dataset,out_queue):
 	print('Entro a setFrecuencia')
 	dataset=first_dataset
 
@@ -174,21 +197,22 @@ def setFrecuencia(first_dataset):
 
 	dataset=dataset.drop(['p_f'], axis=1)
 
-	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+	conn_f=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+	cur_f=conn_f.cursor()
 
-	cur=conn.cursor()
 	for index,row in dataset.iterrows():
 		query="Update "+table+" set F="+str(int(row['F']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
-		cur.execute(query)
+		cur_f.execute(query)
 
-	conn.commit()
-	cur.close()
-	conn.close()
+	conn_f.commit()
+	cur_f.close()
+	conn_f.close()
 
-	return dataset	
+	#return dataset	
+	out_queue.put(dataset)
 
 
-def setMonto(first_dataset):
+def setMonto(first_dataset,out_queue):
 	print('Entro a setMonto')
 	dataset=first_dataset
 
@@ -220,18 +244,19 @@ def setMonto(first_dataset):
 
 	dataset=dataset.drop(['p_m'], axis=1)
 
-	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+	conn_m=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+	cur_m=conn_m.cursor()
 
-	cur=conn.cursor()
 	for index,row in dataset.iterrows():
 		query="Update "+table+" set M="+str(int(row['M']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
-		cur.execute(query)
+		cur_m.execute(query)
 
-	conn.commit()
-	cur.close()
-	conn.close()
+	conn_m.commit()
+	cur_m.close()
+	conn_m.close()
 
-	return dataset		
+	#return dataset
+	out_queue.put(dataset)		
 
 
 def setCatego(last_dataset,segmentosx,ponderacionesx):
@@ -269,15 +294,16 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 
 	dataset=dataset.drop(['p_RFM'], axis=1)
 
-	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-	cur=conn.cursor()
+	conn_c=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+	cur_c=conn_c.cursor()
+
 	for index,row in dataset.iterrows():
 		query="Update "+table+" set Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+row[id_RFM]+"';"
-		cur.execute(query)
+		cur_c.execute(query)
 
-	conn.commit()
-	cur.close()
-	conn.close()		
+	conn_c.commit()
+	cur_c.close()
+	conn_c.close()		
 
 	return dataset
 
