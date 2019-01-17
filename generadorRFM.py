@@ -24,16 +24,18 @@ target_R=''
 target_F=''
 target_M=''
 
-@hug.get()
+@hug.post()
 
-def setRFM():
+def setRFM(body=None):
 
 	"""API que genera RFM para todas las cuentas"""
+	if body==None:
+		post='{"ponderaciones":[{"recencia":25},{"frecuencia":25},{"monto":50}],"segmentos":[{"nombre":"bronce"},{"nombre":"plata"},{"nombre":"oro"}]}'
+		body=json.loads(post)
 
-	post='{"ponderaciones":[{"recencia":25},{"frecuencia":25},{"monto":50}],"segmentos":[{"nombre":"bronce"},{"nombre":"plata"},{"nombre":"oro"}]}'
-	params=json.loads(post)
-	segmentos=params['segmentos']
-	ponderaciones=params['ponderaciones']
+	segmentos=body['segmentos']
+	print('segmentos: ',segmentos)
+	ponderaciones=body['ponderaciones']
 
 	conn=pymysql.connect(host=host_o, user=user_db_o, passwd=pass_db_o, db=db_o)
 	
@@ -90,7 +92,8 @@ def setRFM():
 	last_dataset=dataset_R.merge(dataset_F,on=headers).merge(dataset_M,on=headers)
 	final_dataset=setCatego(last_dataset,segmentos,ponderaciones)
 
-	return final_dataset
+	#return final_dataset
+	return 'Proceso Concluido'
 
 
 def setRecencia(first_dataset):
