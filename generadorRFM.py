@@ -26,16 +26,18 @@ target_R=''
 target_F=''
 target_M=''
 
-@hug.get()
+@hug.post()
 
-def setRFM():
+def setRFM(body=None):
 
 	"""API que genera RFM para todas las cuentas"""
+	if body==None:
+		post='{"ponderaciones":[{"recencia":25},{"frecuencia":25},{"monto":50}],"segmentos":[{"nombre":"bronce"},{"nombre":"plata"},{"nombre":"oro"}]}'
+		body=json.loads(post)
 
-	post='{"ponderaciones":[{"recencia":25},{"frecuencia":25},{"monto":50}],"segmentos":[{"nombre":"bronce"},{"nombre":"plata"},{"nombre":"oro"}]}'
-	params=json.loads(post)
-	segmentos=params['segmentos']
-	ponderaciones=params['ponderaciones']
+	segmentos=body['segmentos']
+	print('segmentos: ',segmentos)
+	ponderaciones=body['ponderaciones']
 
 	conn=pymysql.connect(host=host_o, user=user_db_o, passwd=pass_db_o, db=db_o)
 	
@@ -264,7 +266,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	cur_c=conn_c.cursor()
 
 	for index,row in dataset.iterrows():
-		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+row[id_RFM]+"';"
+		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
 		cur_c.execute(query)
 
 	conn_c.commit()
