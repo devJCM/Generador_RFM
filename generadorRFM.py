@@ -241,7 +241,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	cur=conn.cursor()
 	for index,row in dataset.iterrows():
-		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+row[id_RFM]+"';"
+		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
 		cur.execute(query)
 
 	conn.commit()
