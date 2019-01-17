@@ -149,18 +149,6 @@ def setRecencia(first_dataset,out_queue):
 
 	dataset=dataset.drop(['p_r'], axis=1)
 
-
-	conn_r=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-	cur_r=conn_r.cursor()
-
-	for index,row in dataset.iterrows():
-		query="Update "+table+" set R="+str(int(row['R']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
-		cur_r.execute(query)
-
-	conn_r.commit()
-	cur_r.close()
-	conn_r.close()
-
 	#return dataset
 	out_queue.put(dataset)
 
@@ -197,17 +185,6 @@ def setFrecuencia(first_dataset,out_queue):
 
 	dataset=dataset.drop(['p_f'], axis=1)
 
-	conn_f=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-	cur_f=conn_f.cursor()
-
-	for index,row in dataset.iterrows():
-		query="Update "+table+" set F="+str(int(row['F']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
-		cur_f.execute(query)
-
-	conn_f.commit()
-	cur_f.close()
-	conn_f.close()
-
 	#return dataset	
 	out_queue.put(dataset)
 
@@ -243,17 +220,6 @@ def setMonto(first_dataset,out_queue):
 	dataset.loc[(dataset[target_M] <= lim5) & (dataset[target_M] > lim4), 'M'] = 5
 
 	dataset=dataset.drop(['p_m'], axis=1)
-
-	conn_m=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-	cur_m=conn_m.cursor()
-
-	for index,row in dataset.iterrows():
-		query="Update "+table+" set M="+str(int(row['M']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
-		cur_m.execute(query)
-
-	conn_m.commit()
-	cur_m.close()
-	conn_m.close()
 
 	#return dataset
 	out_queue.put(dataset)		
@@ -298,7 +264,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	cur_c=conn_c.cursor()
 
 	for index,row in dataset.iterrows():
-		query="Update "+table+" set Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+row[id_RFM]+"';"
+		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+row[id_RFM]+"';"
 		cur_c.execute(query)
 
 	conn_c.commit()
