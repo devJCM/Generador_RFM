@@ -104,7 +104,7 @@ def setRecencia(first_dataset):
 	model_r=KMeans(n_clusters=5).fit(dataset[[target_R]])
 	clust_r=pd.Series(model_r.labels_)
 	dataset['p_r']=clust_r
-
+	print('Se genero cluster de setRecencia')
 
 	lim_clusts=[]
 	for i in range(0,5):
@@ -127,18 +127,6 @@ def setRecencia(first_dataset):
 
 	dataset=dataset.drop(['p_r'], axis=1)
 
-
-	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-	cur=conn.cursor()
-
-	for index,row in dataset.iterrows():
-		query="Update "+table+" set R="+str(int(row['R']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
-		cur.execute(query)
-
-	conn.commit()
-	cur.close()
-	conn.close()
-
 	return dataset
 
 
@@ -153,6 +141,7 @@ def setFrecuencia(first_dataset):
 	model_f=KMeans(n_clusters=5).fit(dataset[[target_F]])
 	clust_f=pd.Series(model_f.labels_)
 	dataset['p_f']=clust_f
+	print('Se genero cluster de setFrecuencia')
 
 	lim_clusts=[]
 	for i in range(0,5):
@@ -174,17 +163,6 @@ def setFrecuencia(first_dataset):
 
 	dataset=dataset.drop(['p_f'], axis=1)
 
-	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-
-	cur=conn.cursor()
-	for index,row in dataset.iterrows():
-		query="Update "+table+" set F="+str(int(row['F']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
-		cur.execute(query)
-
-	conn.commit()
-	cur.close()
-	conn.close()
-
 	return dataset	
 
 
@@ -199,6 +177,7 @@ def setMonto(first_dataset):
 	model_m=KMeans(n_clusters=5).fit(dataset[[target_M]])
 	clust_m=pd.Series(model_m.labels_)
 	dataset['p_m']=clust_m
+	print('Se genero cluster de setMonto')
 
 	lim_clusts=[]
 	for i in range(0,5):
@@ -220,17 +199,6 @@ def setMonto(first_dataset):
 
 	dataset=dataset.drop(['p_m'], axis=1)
 
-	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-
-	cur=conn.cursor()
-	for index,row in dataset.iterrows():
-		query="Update "+table+" set M="+str(int(row['M']))+" where "+id_RFM+"='"+row[id_RFM]+"';"
-		cur.execute(query)
-
-	conn.commit()
-	cur.close()
-	conn.close()
-
 	return dataset		
 
 
@@ -245,6 +213,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	model_RFM=KMeans(n_clusters=len(segmentos)).fit(np.array(dataset[['ponderacion']]))
 	clust_RFM=pd.Series(model_RFM.labels_)
 	dataset['p_RFM']=clust_RFM
+	print('Se genero cluster de setCatego')
 
 	lim_clusts=[]
 	for i in range(0,len(segmentos)):
@@ -272,7 +241,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	cur=conn.cursor()
 	for index,row in dataset.iterrows():
-		query="Update "+table+" set Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+row[id_RFM]+"';"
+		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+row[id_RFM]+"';"
 		cur.execute(query)
 
 	conn.commit()
