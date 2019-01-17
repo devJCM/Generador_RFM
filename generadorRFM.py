@@ -17,7 +17,7 @@ host='localhost'
 db='RFM_Generator'
 user_db='root'
 pass_db=''
-table='rfm_unifin'
+table='rfm_unifin2'
 
 id_RFM=''
 target_R=''
@@ -35,11 +35,11 @@ def setRFM():
 	segmentos=params['segmentos']
 	ponderaciones=params['ponderaciones']
 
-	conn=pymysql.connect(host=host_o, user=user_db_o, passwd=pass_db_o, db=db_o)
+	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	
 	cur=conn.cursor()
 	
-	query="SELECT a.id,a.name,max(op.date_entered) as 'Recencia' ,count(op.amount) as 'Tickets',AVG(op.amount) as 'Monto' FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id group by a.id;"
+	query="SELECT id,Recencia,Tickets,Monto FROM rfm_unifin2;"
 
 	cur.execute(query),
 
@@ -49,7 +49,7 @@ def setRFM():
 
 	conn.close()
 
-	headers=['id','name','Recencia','Tickets','Monto']
+	headers=['id','Recencia','Tickets','Monto']
 
 	global id_RFM
 	global target_R
@@ -57,9 +57,9 @@ def setRFM():
 	global target_M
 
 	id_RFM=headers[0]
-	target_R=headers[2]
-	target_F=headers[3]
-	target_M=headers[4]
+	target_R=headers[1]
+	target_F=headers[2]
+	target_M=headers[3]
 	
 	dataset_dummy={}
 	filas=0
@@ -241,7 +241,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	cur=conn.cursor()
 	for index,row in dataset.iterrows():
-		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+row[id_RFM]+"';"
+		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
 		cur.execute(query)
 
 	conn.commit()
