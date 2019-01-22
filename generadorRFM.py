@@ -34,13 +34,13 @@ def setRFM(body=None):
 			elif(i=='db'):
 				info_db=body['db']
 			else:
-				return "Key:"+i+" incorrecta,las keys deben ser lo siguientes, en el siguiente orden: \"segmentos\",\"ponderaciones\",\"db\""
+				return "Key:"+i+" incorrecta,las keys deben ser las siguientes, en el siguiente orden: \"segmentos\",\"ponderaciones\",\"db\""
 
 		for i in segmentos:
 			for key,val in i.items():
 				if(key=='nombre'):
 					if(type(val)!=str):
-						return "Uno de los datos de \"Segmentos\" no es \"string\",favor de corregir"
+						return "Uno de los datos de \"segmentos\" no es \"string\",favor de corregir"
 				else:
 					return "Key:"+key+" incorrecta en  \"segmentos\",debe ser Key:\"nombre\""
 
@@ -76,7 +76,7 @@ def setRFM(body=None):
 					if(type(val)!=str):
 						return "El dato de \"password\" debe ser \"str\",favor de corregir"	
 				else:
-					return "Key:"+key+" incorrecta para \"db\",las keys deben ser lo siguientes, en el siguiente orden: \"host\",\"db\",\"table\",\"user\",\"password\""		
+					return "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"table\",\"user\",\"password\""		
 			
 
 	global host
@@ -133,6 +133,8 @@ def setRFM(body=None):
 				filas+=1
 				for i in range(len(headers)):
 					dataset_dummy[headers[i]].append(r[i])
+		else:
+			return "No hay registros para iniciar el proceso."
 
 		print('El numero de filas de este dataset es de:'+str(filas))
 
