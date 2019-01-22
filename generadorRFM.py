@@ -56,7 +56,7 @@ def setRFM(body=None):
 					if(type(val)!=int):
 						return "El dato de \"monto\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
 				else:
-					return "Key:"+key+" incorrecta para \"ponderaciones\",las keys deben ser lo siguientes, en el siguiente orden: \"recencia\",\"frecuencia\",\"monto\""
+					return "Key:"+key+" incorrecta para \"ponderaciones\",las keys deben ser las siguientes, en el siguiente orden: \"recencia\",\"frecuencia\",\"monto\""
 
 		for i in info_db:
 			for key,val in i.items():
@@ -76,7 +76,7 @@ def setRFM(body=None):
 					if(type(val)!=str):
 						return "El dato de \"password\" debe ser \"str\",favor de corregir"	
 				else:
-					return "Key:"+key+" incorrecta para \"db\",las keys deben ser lo siguientes, en el siguiente orden: \"host\",\"db\",\"table\",\"user\",\"password\""		
+					return "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"table\",\"user\",\"password\""		
 			
 
 	global host
@@ -133,6 +133,8 @@ def setRFM(body=None):
 				filas+=1
 				for i in range(len(headers)):
 					dataset_dummy[headers[i]].append(r[i])
+		else:
+			return "No hay registros para iniciar el proceso."
 
 		print('El numero de filas de este dataset es de:'+str(filas))
 
@@ -312,30 +314,79 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	return dataset
 
 
-@hug.get(examples="id_user=bb53237e-f9b1-11e8-8502-00155da06f04")
+@hug.post()
 
-
-def predictRFM(id_user: hug.types.text):
+def predictRFM(body=None):
 
 	"""API que predice RFM para una cuenta en especifico"""
 
-	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-	
-	cur=conn.cursor()
-	
-	query="SELECT * FROM accounts where id='"+id_user+"';"
+	if body==None:
+		return "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+	else:
+		for i in body:
+			if(i=='id'):
+				id_user=body['id']
+			elif(i=='db'):
+				info_db=body['db']
+			else:
+				return "Key:"+i+" incorrecta,las keys deben ser las siguientes, en el siguiente orden: \"id\",\"db\""
 
-	cur.execute(query)
-	
-	res = cur.fetchall()
+	global host
+	global db
+	global table
+	global user_db
+	global pass_db
 
-	for row in res:
-		print(row[0])
-	
-	cur.close()
-	
-	conn.close()
-	
-	return 'Conexion Exitosa'
+	host=info_db[0]['host']
+	db=info_db[1]['db']
+	user_db=info_db[3]['user']
+	pass_db=info_db[4]['password']
+	table=info_db[2]['table']
+
+	try:
+		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+		
+		cur=conn.cursor()
+		
+		query="SELECT Recencia,Tickets,Monto,R,F,M,Categoria FROM "+table+";"
+
+		cur.execute(query)
+		
+		res = cur.fetchall()
+
+		cur.close()
+		
+		conn.close()
+
+	except pymysql.Error as e:
+
+		return ("Error %d: %s" % (e.args[0], e.args[1]))
+
+	else:
+		if(len(res)>0):
+			headers=['Recencia','Tickets','Monto','R','F','M','Categoria']
+			recencia=headers[0]
+			
+			dataset_dummy={}
+			filas=0
+
+			for h in headers:
+				dataset_dummy[h]=[]
+				
+			for r in res:
+				filas+=1
+				for i in range(len(headers)):
+					dataset_dummy[headers[i]].append(r[i])
+
+			print('El numero de filas de este dataset es de:'+str(filas))
+
+			first_dataset=pd.DataFrame(dataset_dummy)
+
+			first_dataset[recencia]=first_dataset[recencia].astype(str).str.replace('\D', '')
+			first_dataset[recencia]=first_dataset[recencia].astype(str).astype(int)
+
+		else:
+			return "No hay registros para iniciar el proceso."
+
 
 	#return {'message': 'Happy {0} Birthday {1}!'.format(age, name),'took': float(hug_timer)}
