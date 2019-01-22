@@ -8,16 +8,11 @@ import numpy as np
 import json
 from sklearn.cluster import KMeans
 
-host_o='localhost'
-db_o='unifin'
-user_db_o='root'
-pass_db_o=''
-
-host='localhost'
-db='RFM_Generator'
-user_db='root'
-pass_db=''
-table='rfm_unifin2'
+host=None
+db=None
+user_db=None
+pass_db=None
+table=None
 
 id_RFM=''
 target_R=''
@@ -30,20 +25,33 @@ def setRFM(body=None):
 
 	"""API que genera RFM para todas las cuentas"""
 	if body==None:
-		post='{"ponderaciones":[{"recencia":25},{"frecuencia":25},{"monto":50}],"segmentos":[{"nombre":"bronce"},{"nombre":"plata"},{"nombre":"oro"}]}'
-		body=json.loads(post)
+		return "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
 
 	segmentos=body['segmentos']
-	print('segmentos: ',segmentos)
+
 	ponderaciones=body['ponderaciones']
+
+	info_db=body['db']
+
+	global host
+	global db
+	global table
+	global user_db
+	global pass_db
+
+	host=info_db['host']
+	db=info_db['db']
+	user_db=info_db['usuario']
+	pass_db=info_db['password']
+	table=info_db['table']
 
 	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	
 	cur=conn.cursor()
 	
-	query="SELECT id,Recencia,Tickets,Monto FROM rfm_unifin2;"
+	query="SELECT id,Recencia,Tickets,Monto FROM "+table+";"
 
-	cur.execute(query),
+	cur.execute(query)
 
 	res = cur.fetchall()
 
