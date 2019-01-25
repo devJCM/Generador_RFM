@@ -363,7 +363,9 @@ def predictRFM(body=None):
 		return ("Error %d: %s" % (e.args[0], e.args[1]))
 
 	else:
-		if(len(res)>0):
+		if(len(res)==0):
+			return "No hay registros para iniciar el proceso."
+		else:
 			headers=['Recencia','Tickets','Monto','R','F','M','Categoria']
 			recencia=headers[0]
 			
@@ -385,8 +387,6 @@ def predictRFM(body=None):
 			first_dataset[recencia]=first_dataset[recencia].astype(str).str.replace('\D', '')
 			first_dataset[recencia]=first_dataset[recencia].astype(str).astype(int)
 
-		else:
-			return "No hay registros para iniciar el proceso."
 
 
 	#return {'message': 'Happy {0} Birthday {1}!'.format(age, name),'took': float(hug_timer)}
