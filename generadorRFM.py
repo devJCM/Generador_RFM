@@ -27,14 +27,14 @@ def setRFM(body=None):
 		return "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
 	else:
 		for i in body:
-			if(i=='segmentos'):
-				segmentos=body['segmentos']
-			elif(i=='ponderaciones'):
+			if(i=='ponderaciones'):
 				ponderaciones=body['ponderaciones']
+			elif(i=='segmentos'):
+				segmentos=body['segmentos']
 			elif(i=='db'):
 				info_db=body['db']
 			else:
-				return "Key:"+i+" incorrecta,las keys deben ser las siguientes, en el siguiente orden: \"segmentos\",\"ponderaciones\",\"db\""
+				return "Key:"+i+" incorrecta,las keys deben ser las siguientes: \"ponderaciones\",\"segmentos\",\"db\""
 
 		for i in segmentos:
 			for key,val in i.items():
@@ -44,19 +44,28 @@ def setRFM(body=None):
 				else:
 					return "Key:"+key+" incorrecta en  \"segmentos\",debe ser Key:\"nombre\""
 
+		total=0
 		for i in ponderaciones:
 			for key,val in i.items():
 				if(key=='recencia'):
 					if(type(val)!=int):
 						return "El dato de \"recencia\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+					else:
+						total=total+val	
 				elif(key=='frecuencia'):
 					if(type(val)!=int):
 						return "El dato de \"frecuencia\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+					else:
+						total=total+val	
 				elif(key=='monto'):
 					if(type(val)!=int):
 						return "El dato de \"monto\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+					else:
+						total=total+val	
 				else:
 					return "Key:"+key+" incorrecta para \"ponderaciones\",las keys deben ser lo siguientes, en el siguiente orden: \"recencia\",\"frecuencia\",\"monto\""
+		if ((total>100) | (total<100)):
+			return "La suma de las ponderaciones recencia+frecuencia+monto deber ser 100, no "+str(total)+", favor de corregir"
 
 		for i in info_db:
 			for key,val in i.items():
