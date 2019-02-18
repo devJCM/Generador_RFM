@@ -1,0 +1,41 @@
+{
+  "ponderaciones": [
+    {
+      "recencia": 25
+    },
+    {
+      "frecuencia": 25
+    },
+    {
+      "monto": 50
+    }
+  ],
+  "segmentos": [
+    {
+      "nombre": "bronce"
+    },
+    {
+      "nombre": "plata"
+    },
+    {
+      "nombre": "oro"
+    }
+  ],
+  "db":[
+    {
+      "host":"localhost"
+    },
+    {
+      "db":"RFM_Generator"
+    },
+    {
+      "table":"rfm_unifin2"
+    },
+        {
+      "user":"root"
+    },
+        {
+      "password":""
+    }
+  ]
+}

@@ -1,11 +1,16 @@
 
 """API Generador-RFM"""
 
-import hug
 import pymysql
+import json
 import pandas as pd
 import numpy as np
+
+from flask import Flask,Response,request
 from sklearn.cluster import KMeans
+
+
+app = Flask(__name__)
 
 host=None
 db=None
@@ -18,13 +23,14 @@ target_R=''
 target_F=''
 target_M=''
 
-@hug.post()
-
+@app.route("/setRFM",methods=['POST'])
 def setRFM(body=None):
 
 	"""API que genera RFM para todas las cuentas"""
+	body=request.get_json()
 	if body==None:
-		return "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+		msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+		return Response(status=400,response=msj)
 	else:
 		for i in body:
 			if(i=='segmentos'):
@@ -34,59 +40,72 @@ def setRFM(body=None):
 			elif(i=='db'):
 				info_db=body['db']
 			else:
-				return "Key:"+i+" incorrecta,las keys deben ser lo siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+				msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+				return Response(status=400,response=msj)
 
 		for i in segmentos:
 			for key,val in i.items():
 				if(key=='nombre'):
 					if(type(val)!=str):
-						return "Uno de los datos de \"Segmentos\" no es \"string\",favor de corregir"
+						msj= "Uno de los datos de \"Segmentos\" no es \"string\",favor de corregir"
+						return Response(status=400,response=msj)
 				else:
-					return "Key:"+key+" incorrecta en  \"segmentos\",debe ser Key:\"nombre\""
+					msj= "Key:"+key+" incorrecta en  \"segmentos\",debe ser Key:\"nombre\""
+					return Response(status=400,response=msj)
 
 		total=0
 		for i in ponderaciones:
 			for key,val in i.items():
 				if(key=='recencia'):
 					if(type(val)!=int):
-						return "El dato de \"recencia\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+						msj= "El dato de \"recencia\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+						return Response(status=400,response=msj)
 					else:
 						total=total+val	
 				elif(key=='frecuencia'):
 					if(type(val)!=int):
-						return "El dato de \"frecuencia\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+						msj= "El dato de \"frecuencia\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+						return Response(status=400,response=msj)
 					else:
 						total=total+val	
 				elif(key=='monto'):
 					if(type(val)!=int):
-						return "El dato de \"monto\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+						msj= "El dato de \"monto\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+						return Response(status=400,response=msj)
 					else:
 						total=total+val	
 				else:
-					return "Key:"+key+" incorrecta para \"ponderaciones\",las keys deben ser lo siguientes, en el siguiente orden: \"recencia\",\"frecuencia\",\"monto\""
+					msj= "Key:"+key+" incorrecta para \"ponderaciones\",las keys deben ser las siguientes, en el siguiente orden: \"recencia\",\"frecuencia\",\"monto\""
+					return Response(status=400,response=msj)
 		if ((total>100) | (total<100)):
-			return "La suma de las ponderaciones recencia+frecuencia+monto deber ser 100, no "+str(total)+", favor de corregir"
-		
+			msj= "La suma de las ponderaciones recencia+frecuencia+monto deber ser 100, no "+str(total)+", favor de corregir"
+			return Response(status=400,response=msj)
+
 		for i in info_db:
 			for key,val in i.items():
 				if(key=='host'):
 					if(type(val)!=str):
-						return "El dato de \"host\" debe ser \"str\",favor de corregir"
+						msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)
 				elif(key=='db'):
 					if(type(val)!=str):
-						return "El dato de \"db\" debe ser \"str\",favor de corregir"	
+						msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
 				elif(key=='table'):
 					if(type(val)!=str):
-						return "El dato de \"table\" debe ser \"str\",favor de corregir"	
+						msj= "El dato de \"table\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
 				elif(key=='user'):
 					if(type(val)!=str):
-						return "El dato de \"user\" debe ser \"str\",favor de corregir"	
+						msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
 				elif(key=='password'):
 					if(type(val)!=str):
-						return "El dato de \"password\" debe ser \"str\",favor de corregir"	
+						msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
 				else:
-					return "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"table\",\"user\",\"password\""		
-			
+					msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"table\",\"user\",\"password\""		
+					return Response(status=400,response=msj)			
 
 	global host
 	global db
@@ -116,7 +135,8 @@ def setRFM(body=None):
 		conn.close()
 
 	except pymysql.Error as e:
-		return ("Error %d: %s" % (e.args[0], e.args[1]))
+		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+		return Response(status=400,response=msj)
 
 	else:
 		headers=['id','Recencia','Tickets','Monto']
@@ -143,7 +163,8 @@ def setRFM(body=None):
 				for i in range(len(headers)):
 					dataset_dummy[headers[i]].append(r[i])
 		else:
-			return "No hay registros para iniciar el proceso."
+			msj= "No hay registros para iniciar el proceso."
+			return Response(status=400,response=msj)
 
 		print('El numero de filas de este dataset es de:'+str(filas))
 
@@ -162,169 +183,10 @@ def setRFM(body=None):
 		last_dataset=dataset_R.merge(dataset_F,on=headers).merge(dataset_M,on=headers)
 		final_dataset=setCatego(last_dataset,segmentos,ponderaciones)
 
-		return 'Operacion concluida, numero de registros afectados:'+str(filas)
+		msj= 'Operacion concluida, numero de registros afectados:'+str(filas)
+		return Response(status=200,response=msj)
 
-
-def setRecencia(first_dataset):
-	print('Entro a setRecencia')
-	dataset=first_dataset
-
-	dataset=dataset.sort_values(by=target_R,ascending=True)
-	dataset = dataset.reset_index(drop=True)
-	dataset[target_R]=dataset[target_R].fillna(dataset[target_R].mean())
-
-	model_r=KMeans(n_clusters=5).fit(dataset[[target_R]])
-	clust_r=pd.Series(model_r.labels_)
-	dataset['p_r']=clust_r
-	print('Se genero cluster de setRecencia')
-
-	lim_clusts=[]
-	for i in range(0,5):
-		x=dataset[dataset['p_r']==i]
-		lim_clusts.append(x[target_R].max())
-		
-	lim_clusts.sort() 
-
-	lim1=lim_clusts[0]
-	lim2=lim_clusts[1]
-	lim3=lim_clusts[2]
-	lim4=lim_clusts[3]
-	lim5=lim_clusts[4]
-
-	dataset.loc[(dataset[target_R] <= lim1), 'R'] = 1
-	dataset.loc[(dataset[target_R] <= lim2) & (dataset[target_R] > lim1), 'R'] = 2
-	dataset.loc[(dataset[target_R] <= lim3) & (dataset[target_R] > lim2), 'R'] = 3
-	dataset.loc[(dataset[target_R] <= lim4) & (dataset[target_R] > lim3), 'R'] = 4
-	dataset.loc[(dataset[target_R] <= lim5) & (dataset[target_R] > lim4), 'R'] = 5
-
-	dataset=dataset.drop(['p_r'], axis=1)
-
-	return dataset
-
-
-def setFrecuencia(first_dataset):
-	print('Entro a setFrecuencia')
-	dataset=first_dataset
-
-	dataset=dataset.sort_values(by=target_F,ascending=True)
-	dataset = dataset.reset_index(drop=True)
-	dataset[target_F]=dataset[target_F].fillna(dataset[target_F].mean())
-
-	model_f=KMeans(n_clusters=5).fit(dataset[[target_F]])
-	clust_f=pd.Series(model_f.labels_)
-	dataset['p_f']=clust_f
-	print('Se genero cluster de setFrecuencia')
-
-	lim_clusts=[]
-	for i in range(0,5):
-		x=dataset[dataset['p_f']==i]
-		lim_clusts.append(x[target_F].max())
-	lim_clusts.sort()   
-
-	lim1=lim_clusts[0]
-	lim2=lim_clusts[1]
-	lim3=lim_clusts[2]
-	lim4=lim_clusts[3]
-	lim5=lim_clusts[4]
-
-	dataset.loc[(dataset[target_F] <= lim1), 'F'] = 1
-	dataset.loc[(dataset[target_F] <= lim2) & (dataset[target_F] > lim1), 'F'] = 2
-	dataset.loc[(dataset[target_F] <= lim3) & (dataset[target_F] > lim2), 'F'] = 3
-	dataset.loc[(dataset[target_F] <= lim4) & (dataset[target_F] > lim3), 'F'] = 4
-	dataset.loc[(dataset[target_F] <= lim5) & (dataset[target_F] > lim4), 'F'] = 5
-
-	dataset=dataset.drop(['p_f'], axis=1)
-
-	return dataset	
-
-
-def setMonto(first_dataset):
-	print('Entro a setMonto')
-	dataset=first_dataset
-
-	dataset=dataset.sort_values(by=target_M,ascending=True)
-	dataset = dataset.reset_index(drop=True)
-	dataset[target_M]=dataset[target_M].fillna(dataset[target_M].mean())
-
-	model_m=KMeans(n_clusters=5).fit(dataset[[target_M]])
-	clust_m=pd.Series(model_m.labels_)
-	dataset['p_m']=clust_m
-	print('Se genero cluster de setMonto')
-
-	lim_clusts=[]
-	for i in range(0,5):
-		x=dataset[dataset['p_m']==i]
-		lim_clusts.append(x[target_M].max())
-	lim_clusts.sort()   
-
-	lim1=lim_clusts[0]
-	lim2=lim_clusts[1]
-	lim3=lim_clusts[2]
-	lim4=lim_clusts[3]
-	lim5=lim_clusts[4]
-
-	dataset.loc[(dataset[target_M] <= lim1), 'M'] = 1
-	dataset.loc[(dataset[target_M] <= lim2) & (dataset[target_M] > lim1), 'M'] = 2
-	dataset.loc[(dataset[target_M] <= lim3) & (dataset[target_M] > lim2), 'M'] = 3
-	dataset.loc[(dataset[target_M] <= lim4) & (dataset[target_M] > lim3), 'M'] = 4
-	dataset.loc[(dataset[target_M] <= lim5) & (dataset[target_M] > lim4), 'M'] = 5
-
-	dataset=dataset.drop(['p_m'], axis=1)
-
-	return dataset		
-
-
-def setCatego(last_dataset,segmentosx,ponderacionesx):
-	print('Entro a setCatego')
-	dataset=last_dataset
-	segmentos=segmentosx
-	ponderaciones=ponderacionesx
-
-	dataset['ponderacion']=dataset['ponderacion']=((dataset['R']*ponderaciones[0]['recencia'])+(dataset['F']*ponderaciones[1]['frecuencia'])+(dataset['M']*ponderaciones[2]['monto']))/100
-
-	model_RFM=KMeans(n_clusters=len(segmentos)).fit(np.array(dataset[['ponderacion']]))
-	clust_RFM=pd.Series(model_RFM.labels_)
-	dataset['p_RFM']=clust_RFM
-	print('Se genero cluster de setCatego')
-
-	lim_clusts=[]
-	for i in range(0,len(segmentos)):
-		x=dataset[dataset['p_RFM']==i]
-		lim_clusts.append(x['ponderacion'].max())
-
-	lim_clusts.sort()  		
-
-	limits={}
-	for index,i in enumerate(lim_clusts):
-		key = 'limit'+str(index+1)
-		value = i
-		limits[key] = value
-
-	for index,j in enumerate(limits):
-		if j=='limit1':
-			dataset.loc[(dataset['ponderacion'] <= int(limits[j])), 'Categoria'] = segmentos[index]['nombre']
-			temp=limits[j]
-		else:
-			dataset.loc[(dataset['ponderacion'] <= int(limits[j])) & (dataset['ponderacion'] > int(temp)), 'Categoria'] = segmentos[index]['nombre']
-			temp=limits[j]
-
-	dataset=dataset.drop(['p_RFM'], axis=1)
-
-	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-	cur=conn.cursor()
-	for index,row in dataset.iterrows():
-		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
-		cur.execute(query)
-
-	conn.commit()
-	cur.close()
-	conn.close()		
-
-	return dataset
-
-
-@hug.post()
-
+@app.route("/predictRFM",methods=['POST'])
 def predictRFM(body=None):
 
 	"""API que predice RFM para una cuenta en especifico"""
@@ -399,3 +261,165 @@ def predictRFM(body=None):
 
 
 	#return {'message': 'Happy {0} Birthday {1}!'.format(age, name),'took': float(hug_timer)}
+
+
+
+def setRecencia(first_dataset):
+	print('Entro a setRecencia')
+	dataset=first_dataset
+
+	dataset=dataset.sort_values(by=target_R,ascending=True)
+	dataset = dataset.reset_index(drop=True)
+	dataset[target_R]=dataset[target_R].fillna(dataset[target_R].mean())
+
+	model_r=KMeans(n_clusters=5).fit(dataset[[target_R]])
+	clust_r=pd.Series(model_r.labels_)
+	dataset['p_r']=clust_r
+	print('Se genero cluster de setRecencia')
+
+	lim_clusts=[]
+	for i in range(0,5):
+		x=dataset[dataset['p_r']==i]
+		lim_clusts.append(x[target_R].max())
+		
+	lim_clusts.sort() 
+
+	lim1=lim_clusts[0]
+	lim2=lim_clusts[1]
+	lim3=lim_clusts[2]
+	lim4=lim_clusts[3]
+	lim5=lim_clusts[4]
+
+	dataset.loc[(dataset[target_R] <= lim1), 'R'] = 1
+	dataset.loc[(dataset[target_R] <= lim2) & (dataset[target_R] > lim1), 'R'] = 2
+	dataset.loc[(dataset[target_R] <= lim3) & (dataset[target_R] > lim2), 'R'] = 3
+	dataset.loc[(dataset[target_R] <= lim4) & (dataset[target_R] > lim3), 'R'] = 4
+	dataset.loc[(dataset[target_R] <= lim5) & (dataset[target_R] > lim4), 'R'] = 5
+
+	dataset=dataset.drop(['p_r'], axis=1)
+
+	return dataset
+
+def setFrecuencia(first_dataset):
+	print('Entro a setFrecuencia')
+	dataset=first_dataset
+
+	dataset=dataset.sort_values(by=target_F,ascending=True)
+	dataset = dataset.reset_index(drop=True)
+	dataset[target_F]=dataset[target_F].fillna(dataset[target_F].mean())
+
+	model_f=KMeans(n_clusters=5).fit(dataset[[target_F]])
+	clust_f=pd.Series(model_f.labels_)
+	dataset['p_f']=clust_f
+	print('Se genero cluster de setFrecuencia')
+
+	lim_clusts=[]
+	for i in range(0,5):
+		x=dataset[dataset['p_f']==i]
+		lim_clusts.append(x[target_F].max())
+	lim_clusts.sort()   
+
+	lim1=lim_clusts[0]
+	lim2=lim_clusts[1]
+	lim3=lim_clusts[2]
+	lim4=lim_clusts[3]
+	lim5=lim_clusts[4]
+
+	dataset.loc[(dataset[target_F] <= lim1), 'F'] = 1
+	dataset.loc[(dataset[target_F] <= lim2) & (dataset[target_F] > lim1), 'F'] = 2
+	dataset.loc[(dataset[target_F] <= lim3) & (dataset[target_F] > lim2), 'F'] = 3
+	dataset.loc[(dataset[target_F] <= lim4) & (dataset[target_F] > lim3), 'F'] = 4
+	dataset.loc[(dataset[target_F] <= lim5) & (dataset[target_F] > lim4), 'F'] = 5
+
+	dataset=dataset.drop(['p_f'], axis=1)
+
+	return dataset	
+
+def setMonto(first_dataset):
+	print('Entro a setMonto')
+	dataset=first_dataset
+
+	dataset=dataset.sort_values(by=target_M,ascending=True)
+	dataset = dataset.reset_index(drop=True)
+	dataset[target_M]=dataset[target_M].fillna(dataset[target_M].mean())
+
+	model_m=KMeans(n_clusters=5).fit(dataset[[target_M]])
+	clust_m=pd.Series(model_m.labels_)
+	dataset['p_m']=clust_m
+	print('Se genero cluster de setMonto')
+
+	lim_clusts=[]
+	for i in range(0,5):
+		x=dataset[dataset['p_m']==i]
+		lim_clusts.append(x[target_M].max())
+	lim_clusts.sort()   
+
+	lim1=lim_clusts[0]
+	lim2=lim_clusts[1]
+	lim3=lim_clusts[2]
+	lim4=lim_clusts[3]
+	lim5=lim_clusts[4]
+
+	dataset.loc[(dataset[target_M] <= lim1), 'M'] = 1
+	dataset.loc[(dataset[target_M] <= lim2) & (dataset[target_M] > lim1), 'M'] = 2
+	dataset.loc[(dataset[target_M] <= lim3) & (dataset[target_M] > lim2), 'M'] = 3
+	dataset.loc[(dataset[target_M] <= lim4) & (dataset[target_M] > lim3), 'M'] = 4
+	dataset.loc[(dataset[target_M] <= lim5) & (dataset[target_M] > lim4), 'M'] = 5
+
+	dataset=dataset.drop(['p_m'], axis=1)
+
+	return dataset		
+
+def setCatego(last_dataset,segmentosx,ponderacionesx):
+	print('Entro a setCatego')
+	dataset=last_dataset
+	segmentos=segmentosx
+	ponderaciones=ponderacionesx
+
+	dataset['ponderacion']=dataset['ponderacion']=((dataset['R']*ponderaciones[0]['recencia'])+(dataset['F']*ponderaciones[1]['frecuencia'])+(dataset['M']*ponderaciones[2]['monto']))/100
+
+	model_RFM=KMeans(n_clusters=len(segmentos)).fit(np.array(dataset[['ponderacion']]))
+	clust_RFM=pd.Series(model_RFM.labels_)
+	dataset['p_RFM']=clust_RFM
+	print('Se genero cluster de setCatego')
+
+	lim_clusts=[]
+	for i in range(0,len(segmentos)):
+		x=dataset[dataset['p_RFM']==i]
+		lim_clusts.append(x['ponderacion'].max())
+
+	lim_clusts.sort()  		
+
+	limits={}
+	for index,i in enumerate(lim_clusts):
+		key = 'limit'+str(index+1)
+		value = i
+		limits[key] = value
+
+	for index,j in enumerate(limits):
+		if j=='limit1':
+			dataset.loc[(dataset['ponderacion'] <= int(limits[j])), 'Categoria'] = segmentos[index]['nombre']
+			temp=limits[j]
+		else:
+			dataset.loc[(dataset['ponderacion'] <= int(limits[j])) & (dataset['ponderacion'] > int(temp)), 'Categoria'] = segmentos[index]['nombre']
+			temp=limits[j]
+
+	dataset=dataset.drop(['p_RFM'], axis=1)
+
+	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+	cur=conn.cursor()
+	for index,row in dataset.iterrows():
+		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
+		cur.execute(query)
+
+	conn.commit()
+	cur.close()
+	conn.close()		
+
+	return dataset
+
+
+
+
+if __name__ == '__main__':
+	app.run(debug=True, host='0.0.0.0', port=5000)
