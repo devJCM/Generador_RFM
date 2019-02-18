@@ -18,6 +18,7 @@ user_db=None
 pass_db=None
 table=None
 
+id_client=''
 id_RFM=''
 target_R=''
 target_F=''
@@ -190,17 +191,45 @@ def setRFM(body=None):
 def predictRFM(body=None):
 
 	"""API que predice RFM para una cuenta en especifico"""
-
+	body=request.get_json()
 	if body==None:
-		return "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+		msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+		return Response(status=400,response=msj)
 	else:
 		for i in body:
 			if(i=='id'):
-				id_user=body['id']
+				id_client=body['id']
 			elif(i=='db'):
 				info_db=body['db']
 			else:
-				return "Key:"+i+" incorrecta,las keys deben ser las siguientes, en el siguiente orden: \"id\",\"db\""
+				msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+				return Response(status=400,response=msj)
+
+		for i in info_db:
+			for key,val in i.items():
+				if(key=='host'):
+					if(type(val)!=str):
+						msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)
+				elif(key=='db'):
+					if(type(val)!=str):
+						msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
+				elif(key=='table'):
+					if(type(val)!=str):
+						msj= "El dato de \"table\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
+				elif(key=='user'):
+					if(type(val)!=str):
+						msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
+				elif(key=='password'):
+					if(type(val)!=str):
+						msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
+				else:
+					msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"table\",\"user\",\"password\""		
+					return Response(status=400,response=msj)			
 
 	global host
 	global db
@@ -216,51 +245,26 @@ def predictRFM(body=None):
 
 	try:
 		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-		
+
 		cur=conn.cursor()
 		
-		query="SELECT Recencia,Tickets,Monto,R,F,M,Categoria FROM "+table+";"
+		query=""
 
 		cur.execute(query)
-		
+
 		res = cur.fetchall()
 
 		cur.close()
-		
+
 		conn.close()
 
 	except pymysql.Error as e:
-
-		return ("Error %d: %s" % (e.args[0], e.args[1]))
+		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+		return Response(status=400,response=msj)
 
 	else:
-		if(len(res)==0):
-			return "No hay registros para iniciar el proceso."
-		else:
-			headers=['Recencia','Tickets','Monto','R','F','M','Categoria']
-			recencia=headers[0]
-			
-			dataset_dummy={}
-			filas=0
-
-			for h in headers:
-				dataset_dummy[h]=[]
-				
-			for r in res:
-				filas+=1
-				for i in range(len(headers)):
-					dataset_dummy[headers[i]].append(r[i])
-
-			print('El numero de filas de este dataset es de:'+str(filas))
-
-			first_dataset=pd.DataFrame(dataset_dummy)
-
-			first_dataset[recencia]=first_dataset[recencia].astype(str).str.replace('\D', '')
-			first_dataset[recencia]=first_dataset[recencia].astype(str).astype(int)
-
-
-
-	#return {'message': 'Happy {0} Birthday {1}!'.format(age, name),'took': float(hug_timer)}
+		msj= 'Operacion concluida'
+		return Response(status=200,response=msj)
 
 
 
