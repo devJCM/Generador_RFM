@@ -132,78 +132,6 @@ def setRFM(body=None):
 		return Response(status=200,response=msj)
 		#return last_dataset
 
-@app.route("/predictRFM",methods=['POST'])
-def predictRFM(body=None):
-
-	"""API que predice RFM para una cuenta en especifico"""
-	body=request.get_json()
-	if body==None:
-		msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
-		return Response(status=400,response=msj)
-	else:
-		for i in body:
-			if(i=='id'):
-				id_client=body['id']
-			elif(i=='db'):
-				info_db=body['db']
-			else:
-				msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
-				return Response(status=400,response=msj)
-
-		for i in info_db:
-			for key,val in i.items():
-				if(key=='host'):
-					if(type(val)!=str):
-						msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)
-				elif(key=='db'):
-					if(type(val)!=str):
-						msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
-				elif(key=='user'):
-					if(type(val)!=str):
-						msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
-				elif(key=='password'):
-					if(type(val)!=str):
-						msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
-				else:
-					msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""		
-					return Response(status=400,response=msj)			
-
-	global host
-	global db
-	global user_db
-	global pass_db
-
-	host=info_db[0]['host']
-	db=info_db[1]['db']
-	user_db=info_db[3]['user']
-	pass_db=info_db[4]['password']
-
-	try:
-		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-
-		cur=conn.cursor()
-		
-		query=""
-
-		cur.execute(query)
-
-		res = cur.fetchall()
-
-		cur.close()
-
-		conn.close()
-
-	except pymysql.Error as e:
-		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
-		return Response(status=400,response=msj)
-
-	else:
-		msj= 'Operacion concluida'
-		return Response(status=200,response=msj)
 
 
 
@@ -464,6 +392,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	conn.close()		
 
 	return dataset
+
 
 
 
