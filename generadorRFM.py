@@ -20,7 +20,7 @@ pass_db=None
 #----Modify-----
 query_extract="SELECT a.id,a.name,max(op.date_entered) as 'Recencia',count(op.amount) as 'Frecuencia',AVG(op.amount) as 'Monto' FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id group by a.id;"
 #----Modify-----
-id_client=None
+name_table='RFM_table'
 id_RFM=None
 nombre_RFM=None
 target_R=None
@@ -212,13 +212,13 @@ def create_table():
 
 		print('Entro a create_table')
 
-		db='RFM_Generator'
+		#db='RFM_Generator'
 
 		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 
 		cur=conn.cursor()
 
-		query='CREATE TABLE IF NOT EXISTS setRFM (id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,id_client VARCHAR(125),Nombre VARCHAR(125),Recencia char(20),Frecuencia int(5),Monto double(25,4),R int(5),F int(5),M int(5),Segmento char(30))'
+		query='CREATE TABLE IF NOT EXISTS %s (id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,id_client VARCHAR(125),Nombre VARCHAR(125),Recencia char(20),Frecuencia int(5),Monto double(25,4),R int(5),F int(5),M int(5),Segmento char(30))'%(name_table)
 
 		cur.execute(query)
 
@@ -373,7 +373,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	dataset['Monto']=dataset['Monto'].astype(float)
 	dataset=dataset.round({'Monto': 4})
 
-	db='RFM_Generator'
+	#db='RFM_Generator'
 	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	cur=conn.cursor()
 
@@ -385,7 +385,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 		cont=cont+1
 
 	print('inserts:',cont)
-	query="insert into setRFM(id_client,Nombre,Recencia,Frecuencia,Monto,R,F,M,Segmento) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+	query="insert into "+name_table+"(id_client,Nombre,Recencia,Frecuencia,Monto,R,F,M,Segmento) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 	cur.executemany(query,val)
 	conn.commit()
 	cur.close()
