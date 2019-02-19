@@ -39,3 +39,45 @@
     }
   ]
 }
+
+----------------------------------------------------Unifin
+
+
+{
+  "ponderaciones": [
+    {
+      "recencia": 25
+    },
+    {
+      "frecuencia": 25
+    },
+    {
+      "monto": 50
+    }
+  ],
+  "segmentos": [
+    {
+      "nombre": "bronce"
+    },
+    {
+      "nombre": "plata"
+    },
+    {
+      "nombre": "oro"
+    }
+  ],
+  "db":[
+    {
+      "host":"localhost"
+    },
+    {
+      "db":"unifin"
+    },
+    {
+      "user":"root"
+    },
+    {
+      "password":""
+    }
+  ]
+}

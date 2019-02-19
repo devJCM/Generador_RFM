@@ -3,6 +3,7 @@
 
 import pymysql
 import json
+import time
 import pandas as pd
 import numpy as np
 
@@ -16,13 +17,15 @@ host=None
 db=None
 user_db=None
 pass_db=None
-table=None
-
-id_client=''
-id_RFM=''
-target_R=''
-target_F=''
-target_M=''
+#----Modify-----
+query_extract="SELECT a.id,a.name,max(op.date_entered) as 'Recencia',count(op.amount) as 'Frecuencia',AVG(op.amount) as 'Monto' FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id group by a.id;"
+#----Modify-----
+id_client=None
+id_RFM=None
+nombre_RFM=None
+target_R=None
+target_F=None
+target_M=None
 
 @app.route("/setRFM",methods=['POST'])
 def setRFM(body=None):
@@ -33,6 +36,178 @@ def setRFM(body=None):
 		msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
 		return Response(status=400,response=msj)
 	else:
+		check=checkBodysetRFM(body)
+		if (check!='OK'):
+			return check
+
+
+	segmentos=body['segmentos']
+	ponderaciones=body['ponderaciones']
+	info_db=body['db']		
+
+	global host
+	global db
+	global user_db
+	global pass_db
+
+	host=info_db[0]['host']
+	db=info_db[1]['db']
+	user_db=info_db[2]['user']
+	pass_db=info_db[3]['password']
+
+
+	try:
+		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+		cur=conn.cursor()
+
+		cur.execute(query_extract)
+
+		res = cur.fetchall()
+
+		cur.close()
+
+		conn.close()
+
+		create_table()
+	except pymysql.Error as e:
+		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+		return Response(status=400,response=msj)
+
+	else:
+		global id_RFM
+		global nombre_RFM
+		global target_R
+		global target_F
+		global target_M
+
+		#----Modify-----
+		headers=['id','Nombre','Recencia','Frecuencia','Monto']
+
+		id_RFM=headers[0]
+		nombre_RFM=headers[1]
+		target_R=headers[2]
+		target_F=headers[3]
+		target_M=headers[4]
+		#----Modify-----		
+		dataset_dummy={}
+		filas=0
+
+		for h in headers:
+			dataset_dummy[h]=[]
+			
+		if(len(res)>0):
+			for r in res:
+				filas+=1
+				for i in range(len(headers)):
+					dataset_dummy[headers[i]].append(r[i])
+		else:
+			msj= "No hay registros para iniciar el proceso."
+			return Response(status=400,response=msj)
+
+		print('El numero de filas de este dataset es de:'+str(filas))
+
+		first_dataset=pd.DataFrame(dataset_dummy)
+
+
+		first_dataset[target_R]=first_dataset[target_R].astype(str).str.replace('\D', '')
+		first_dataset[target_R]=first_dataset[target_R].astype(str).astype(int)
+		first_dataset[target_R]=first_dataset[target_R].fillna(first_dataset[target_R].mean())
+		first_dataset[target_F]=first_dataset[target_F].fillna(first_dataset[target_F].mean())
+		first_dataset[target_M]=first_dataset[target_M].fillna(0)
+
+
+		#Llamada a los 3 servicios
+		dataset_R=setRecencia(first_dataset)
+		dataset_F=setFrecuencia(first_dataset)
+		dataset_M=setMonto(first_dataset)
+
+
+		last_dataset=dataset_R.merge(dataset_F,on=headers).merge(dataset_M,on=headers)
+		final_dataset=setCatego(last_dataset,segmentos,ponderaciones)
+
+
+
+		msj= 'Operacion concluida, numero de registros afectados:'+str(filas)
+		return Response(status=200,response=msj)
+		#return last_dataset
+
+@app.route("/predictRFM",methods=['POST'])
+def predictRFM(body=None):
+
+	"""API que predice RFM para una cuenta en especifico"""
+	body=request.get_json()
+	if body==None:
+		msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+		return Response(status=400,response=msj)
+	else:
+		for i in body:
+			if(i=='id'):
+				id_client=body['id']
+			elif(i=='db'):
+				info_db=body['db']
+			else:
+				msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+				return Response(status=400,response=msj)
+
+		for i in info_db:
+			for key,val in i.items():
+				if(key=='host'):
+					if(type(val)!=str):
+						msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)
+				elif(key=='db'):
+					if(type(val)!=str):
+						msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
+				elif(key=='user'):
+					if(type(val)!=str):
+						msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
+				elif(key=='password'):
+					if(type(val)!=str):
+						msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)	
+				else:
+					msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""		
+					return Response(status=400,response=msj)			
+
+	global host
+	global db
+	global user_db
+	global pass_db
+
+	host=info_db[0]['host']
+	db=info_db[1]['db']
+	user_db=info_db[3]['user']
+	pass_db=info_db[4]['password']
+
+	try:
+		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+		cur=conn.cursor()
+		
+		query=""
+
+		cur.execute(query)
+
+		res = cur.fetchall()
+
+		cur.close()
+
+		conn.close()
+
+	except pymysql.Error as e:
+		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+		return Response(status=400,response=msj)
+
+	else:
+		msj= 'Operacion concluida'
+		return Response(status=200,response=msj)
+
+
+
+def checkBodysetRFM(body):
 		for i in body:
 			if(i=='segmentos'):
 				segmentos=body['segmentos']
@@ -92,10 +267,6 @@ def setRFM(body=None):
 					if(type(val)!=str):
 						msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
 						return Response(status=400,response=msj)	
-				elif(key=='table'):
-					if(type(val)!=str):
-						msj= "El dato de \"table\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
 				elif(key=='user'):
 					if(type(val)!=str):
 						msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
@@ -105,168 +276,9 @@ def setRFM(body=None):
 						msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
 						return Response(status=400,response=msj)	
 				else:
-					msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"table\",\"user\",\"password\""		
-					return Response(status=400,response=msj)			
-
-	global host
-	global db
-	global table
-	global user_db
-	global pass_db
-
-	host=info_db[0]['host']
-	db=info_db[1]['db']
-	user_db=info_db[3]['user']
-	pass_db=info_db[4]['password']
-	table=info_db[2]['table']
-
-	try:
-		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-
-		cur=conn.cursor()
-		
-		query="SELECT id,Recencia,Tickets,Monto FROM "+table+";"
-
-		cur.execute(query)
-
-		res = cur.fetchall()
-
-		cur.close()
-
-		conn.close()
-
-	except pymysql.Error as e:
-		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
-		return Response(status=400,response=msj)
-
-	else:
-		headers=['id','Recencia','Tickets','Monto']
-
-		global id_RFM
-		global target_R
-		global target_F
-		global target_M
-
-		id_RFM=headers[0]
-		target_R=headers[1]
-		target_F=headers[2]
-		target_M=headers[3]
-		
-		dataset_dummy={}
-		filas=0
-
-		for h in headers:
-			dataset_dummy[h]=[]
-			
-		if(len(res)>0):
-			for r in res:
-				filas+=1
-				for i in range(len(headers)):
-					dataset_dummy[headers[i]].append(r[i])
-		else:
-			msj= "No hay registros para iniciar el proceso."
-			return Response(status=400,response=msj)
-
-		print('El numero de filas de este dataset es de:'+str(filas))
-
-		first_dataset=pd.DataFrame(dataset_dummy)
-
-		first_dataset[target_R]=first_dataset[target_R].astype(str).str.replace('\D', '')
-		first_dataset[target_R]=first_dataset[target_R].astype(str).astype(int)
-
-
-		#Llamada a los 3 servicios
-		dataset_R=setRecencia(first_dataset)
-		dataset_F=setFrecuencia(first_dataset)
-		dataset_M=setMonto(first_dataset)
-
-
-		last_dataset=dataset_R.merge(dataset_F,on=headers).merge(dataset_M,on=headers)
-		final_dataset=setCatego(last_dataset,segmentos,ponderaciones)
-
-		msj= 'Operacion concluida, numero de registros afectados:'+str(filas)
-		return Response(status=200,response=msj)
-
-@app.route("/predictRFM",methods=['POST'])
-def predictRFM(body=None):
-
-	"""API que predice RFM para una cuenta en especifico"""
-	body=request.get_json()
-	if body==None:
-		msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
-		return Response(status=400,response=msj)
-	else:
-		for i in body:
-			if(i=='id'):
-				id_client=body['id']
-			elif(i=='db'):
-				info_db=body['db']
-			else:
-				msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
-				return Response(status=400,response=msj)
-
-		for i in info_db:
-			for key,val in i.items():
-				if(key=='host'):
-					if(type(val)!=str):
-						msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)
-				elif(key=='db'):
-					if(type(val)!=str):
-						msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
-				elif(key=='table'):
-					if(type(val)!=str):
-						msj= "El dato de \"table\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
-				elif(key=='user'):
-					if(type(val)!=str):
-						msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
-				elif(key=='password'):
-					if(type(val)!=str):
-						msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
-				else:
-					msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"table\",\"user\",\"password\""		
-					return Response(status=400,response=msj)			
-
-	global host
-	global db
-	global table
-	global user_db
-	global pass_db
-
-	host=info_db[0]['host']
-	db=info_db[1]['db']
-	user_db=info_db[3]['user']
-	pass_db=info_db[4]['password']
-	table=info_db[2]['table']
-
-	try:
-		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-
-		cur=conn.cursor()
-		
-		query=""
-
-		cur.execute(query)
-
-		res = cur.fetchall()
-
-		cur.close()
-
-		conn.close()
-
-	except pymysql.Error as e:
-		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
-		return Response(status=400,response=msj)
-
-	else:
-		msj= 'Operacion concluida'
-		return Response(status=200,response=msj)
-
-
+					msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""		
+					return Response(status=400,response=msj)	
+		return 'OK'						
 
 def setRecencia(first_dataset):
 	print('Entro a setRecencia')
@@ -274,7 +286,7 @@ def setRecencia(first_dataset):
 
 	dataset=dataset.sort_values(by=target_R,ascending=True)
 	dataset = dataset.reset_index(drop=True)
-	dataset[target_R]=dataset[target_R].fillna(dataset[target_R].mean())
+	#dataset[target_R]=dataset[target_R].fillna(dataset[target_R].mean())
 
 	model_r=KMeans(n_clusters=5).fit(dataset[[target_R]])
 	clust_r=pd.Series(model_r.labels_)
@@ -310,7 +322,7 @@ def setFrecuencia(first_dataset):
 
 	dataset=dataset.sort_values(by=target_F,ascending=True)
 	dataset = dataset.reset_index(drop=True)
-	dataset[target_F]=dataset[target_F].fillna(dataset[target_F].mean())
+	#dataset[target_F]=dataset[target_F].fillna(dataset[target_F].mean())
 
 	model_f=KMeans(n_clusters=5).fit(dataset[[target_F]])
 	clust_f=pd.Series(model_f.labels_)
@@ -345,7 +357,7 @@ def setMonto(first_dataset):
 
 	dataset=dataset.sort_values(by=target_M,ascending=True)
 	dataset = dataset.reset_index(drop=True)
-	dataset[target_M]=dataset[target_M].fillna(dataset[target_M].mean())
+	#dataset[target_M]=dataset[target_M].fillna(0)
 
 	model_m=KMeans(n_clusters=5).fit(dataset[[target_M]])
 	clust_m=pd.Series(model_m.labels_)
@@ -400,29 +412,58 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 		value = i
 		limits[key] = value
 
+
 	for index,j in enumerate(limits):
 		if j=='limit1':
-			dataset.loc[(dataset['ponderacion'] <= int(limits[j])), 'Categoria'] = segmentos[index]['nombre']
+			dataset.loc[(dataset['ponderacion'] <= limits[j]), 'Segmento'] = segmentos[index]['nombre']
 			temp=limits[j]
 		else:
-			dataset.loc[(dataset['ponderacion'] <= int(limits[j])) & (dataset['ponderacion'] > int(temp)), 'Categoria'] = segmentos[index]['nombre']
+			dataset.loc[(dataset['ponderacion']<=limits[j]) & (dataset['ponderacion']>temp), 'Segmento'] = segmentos[index]['nombre']
 			temp=limits[j]
 
 	dataset=dataset.drop(['p_RFM'], axis=1)
+	dataset['Monto']=dataset['Monto'].astype(float)
+	dataset=dataset.round({'Monto': 4})
 
+	db='RFM_Generator'
 	conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 	cur=conn.cursor()
-	for index,row in dataset.iterrows():
-		query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
-		cur.execute(query)
 
+	cont=0
+	val=[]
+	for index,row in dataset.iterrows():
+		#query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
+		val.append((row[id_RFM],row[nombre_RFM],row[target_R],row[target_F],row[target_M],row['R'],row['F'],row['M'],row['Segmento']))
+		cont=cont+1
+
+	print('inserts:',cont)
+	query="insert into setRFM(id_client,Nombre,Recencia,Frecuencia,Monto,R,F,M,Segmento) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+	cur.executemany(query,val)
 	conn.commit()
 	cur.close()
 	conn.close()		
 
 	return dataset
 
+def create_table():
 
+		print('Entro a create_table')
+
+		db='RFM_Generator'
+
+		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+		cur=conn.cursor()
+
+		query='CREATE TABLE IF NOT EXISTS setRFM (id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,id_client VARCHAR(125),Nombre VARCHAR(125),Recencia char(20),Frecuencia int(5),Monto double(25,4),R int(5),F int(5),M int(5),Segmento char(30))'
+
+		cur.execute(query)
+
+		cur.close()
+
+		conn.close()
+
+		return
 
 
 if __name__ == '__main__':
