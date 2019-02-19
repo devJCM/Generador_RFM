@@ -280,6 +280,26 @@ def checkBodysetRFM(body):
 					return Response(status=400,response=msj)	
 		return 'OK'						
 
+def create_table():
+
+		print('Entro a create_table')
+
+		db='RFM_Generator'
+
+		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+		cur=conn.cursor()
+
+		query='CREATE TABLE IF NOT EXISTS setRFM (id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,id_client VARCHAR(125),Nombre VARCHAR(125),Recencia char(20),Frecuencia int(5),Monto double(25,4),R int(5),F int(5),M int(5),Segmento char(30))'
+
+		cur.execute(query)
+
+		cur.close()
+
+		conn.close()
+
+		return		
+
 def setRecencia(first_dataset):
 	print('Entro a setRecencia')
 	dataset=first_dataset
@@ -445,25 +465,6 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 
 	return dataset
 
-def create_table():
-
-		print('Entro a create_table')
-
-		db='RFM_Generator'
-
-		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-
-		cur=conn.cursor()
-
-		query='CREATE TABLE IF NOT EXISTS setRFM (id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,id_client VARCHAR(125),Nombre VARCHAR(125),Recencia char(20),Frecuencia int(5),Monto double(25,4),R int(5),F int(5),M int(5),Segmento char(30))'
-
-		cur.execute(query)
-
-		cur.close()
-
-		conn.close()
-
-		return
 
 
 if __name__ == '__main__':
