@@ -1,0 +1,20 @@
+{
+  "id": "8a7620d2-6d1b-4549-a643-2de552952698",
+  
+  "db": [
+    {
+      "host": "localhost"
+    },
+    {
+      "db": "unifin"
+    },
+    {
+      "user": "root"
+    },
+    {
+      "password": ""
+    }
+  ],
+
+  "lifetime": 14
+}
