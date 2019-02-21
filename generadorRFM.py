@@ -11,6 +11,9 @@ from flask import Flask,Response,request
 from sklearn.cluster import KMeans
 
 
+
+
+
 app = Flask(__name__)
 
 host=None
@@ -24,6 +27,11 @@ nombre_RFM=None
 target_R=None
 target_F=None
 target_M=None
+
+
+
+
+
 
 @app.route("/setRFM",methods=['POST'])
 def setRFM(body=None):
@@ -623,6 +631,7 @@ def getlifetime():
 				final_lifetime=lifetime_count/cont
 				#print('Vida promedio en meses:',final_lifetime)
 				return final_lifetime
+
 
 
 
