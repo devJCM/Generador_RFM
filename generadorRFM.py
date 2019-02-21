@@ -211,6 +211,7 @@ def getCLV():
 		
 
 
+
 def checkBodygetCLV(body):
 		c=0
 		for i in body:
@@ -622,6 +623,10 @@ def getlifetime():
 				final_lifetime=lifetime_count/cont
 				#print('Vida promedio en meses:',final_lifetime)
 				return final_lifetime
+
+
+
+
 
 if __name__ == '__main__':
 	app.run(debug=True, host='0.0.0.0', port=5000)
