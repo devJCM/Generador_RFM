@@ -17,9 +17,7 @@ host=None
 db=None
 user_db=None
 pass_db=None
-#----Modify-----
-query_extract="SELECT a.id,a.name,max(op.date_entered) as 'Recencia',count(op.amount) as 'Frecuencia',AVG(op.amount) as 'Monto' FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id group by a.id;"
-#----Modify-----
+
 name_table='RFM_table'
 id_RFM=None
 nombre_RFM=None
@@ -61,6 +59,10 @@ def setRFM(body=None):
 
 		cur=conn.cursor()
 
+		#----Modify-----
+		query_extract="SELECT a.id,a.name,max(op.date_entered) as 'Recencia',count(op.amount) as 'Frecuencia',AVG(op.amount) as 'Monto' FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id group by a.id;"
+		#----Modify-----
+		
 		cur.execute(query_extract)
 
 		res = cur.fetchall()
@@ -72,6 +74,7 @@ def setRFM(body=None):
 		create_table()
 	except pymysql.Error as e:
 		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+		print(msj)
 		return Response(status=400,response=msj)
 
 	else:
@@ -132,22 +135,151 @@ def setRFM(body=None):
 		return Response(status=200,response=msj)
 		#return last_dataset
 
+@app.route("/getCLV",methods=['POST'])
+def getCLV():
+	body=request.get_json()
+	if body==None:
+		msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+		return Response(status=400,response=msj)
+	else:
+		check=checkBodygetCLV(body)
+		if (check!='OK'):
+			return check
+
+	info_db=body['db']		
+	id_client=body['id']
+
+	global host
+	global db
+	global user_db
+	global pass_db
+
+	host=info_db[0]['host']
+	db=info_db[1]['db']
+	user_db=info_db[2]['user']
+	pass_db=info_db[3]['password']
+
+	if 'lifetime' in body:
+		lifetime=body['lifetime']
+	else:
+		lifetime=getlifetime()	
 
 
+
+	try:
+		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+		cur=conn.cursor()
+
+		#----Modify-----
+		query_extract="SELECT count(op.amount) as 'Frecuencia',AVG(op.amount) as 'Monto' FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id AND a.id='%s' group by a.id;" %(id_client)
+		#----Modify-----
+		
+		cur.execute(query_extract)
+
+		res = cur.fetchall()
+
+		cur.close()
+
+		conn.close()
+
+	except pymysql.Error as e:
+		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+		print(msj)
+		return Response(status=400,response=msj)
+	else:
+		if(len(res)>0):
+			#----Modify-----
+			frecuencia=res[0][0]
+			monto_prom=res[0][1]
+			#----Modify-----
+		else:
+			msj= "Este registro no cuenta con información."
+			return Response(status=400,response=msj)
+
+		print('frecuencia:',float(frecuencia))
+		print('monto_prom:',float(monto_prom))
+		client_value=float(frecuencia)*float(monto_prom)
+		cvl=client_value*lifetime
+		data={}
+		data['Valor del cliente']=float(client_value)
+		data['Esperanza de Vida en meses']=lifetime
+		data['Customer Lifetime Value']=cvl
+		data['Id de cliente']=id_client
+		msj=json.dumps(data)
+		return Response(msj,status=200)
+		
+
+
+def checkBodygetCLV(body):
+		c=0
+		for i in body:
+			if(i!='id' and i!='db' and i!='lifetime'):
+				msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"id\",\"db\",\"lifetime\""
+				return Response(status=400,response=msj)
+			else:
+				c=c+1
+		if(c!=3 and c!=2):
+				msj= "Falta alguna key,las keys deben ser las siguientes:\"id\",\"db\",opcional(\"lifetime\")"
+				return Response(status=400,response=msj)		
+
+		if(type(body['id'])!=str):
+			msj= "El id no es \"string\",favor de corregir"
+			return Response(status=400,response=msj)
+
+		if 'lifetime' in body:
+			if(type(body['lifetime'])!=int):
+				msj= "El lifetime no es \"integer\",favor de corregir"
+				return Response(status=400,response=msj)	
+
+		c=0
+		for i in body['db']:
+			for key,val in i.items():
+				if(key=='host'):
+					if(type(val)!=str):
+						msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)
+					else:
+						c=c+1	
+				elif(key=='db'):
+					if(type(val)!=str):
+						msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)
+					else:
+						c=c+1	
+				elif(key=='user'):
+					if(type(val)!=str):
+						msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)
+					else:
+						c=c+1	
+				elif(key=='password'):
+					if(type(val)!=str):
+						msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
+						return Response(status=400,response=msj)
+					else:
+						c=c+1	
+				else:
+					msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""		
+					return Response(status=400,response=msj)	
+		if(c!=4):
+			msj= "Falta alguna key,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+			return Response(status=400,response=msj)
+		return 'OK'											
 
 def checkBodysetRFM(body):
+		c=0
 		for i in body:
-			if(i=='segmentos'):
-				segmentos=body['segmentos']
-			elif(i=='ponderaciones'):
-				ponderaciones=body['ponderaciones']
-			elif(i=='db'):
-				info_db=body['db']
-			else:
+			if(i!='segmentos' and i!='ponderaciones' and i!='db'):
 				msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
 				return Response(status=400,response=msj)
+			else:
+				c=c+1
+		if(c!=3):
+				msj= "Falta alguna key,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+				return Response(status=400,response=msj)		
 
-		for i in segmentos:
+		for i in body['segmentos']:
 			for key,val in i.items():
 				if(key=='nombre'):
 					if(type(val)!=str):
@@ -158,25 +290,29 @@ def checkBodysetRFM(body):
 					return Response(status=400,response=msj)
 
 		total=0
-		for i in ponderaciones:
+		c=0
+		for i in body['ponderaciones']:
 			for key,val in i.items():
 				if(key=='recencia'):
 					if(type(val)!=int):
 						msj= "El dato de \"recencia\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
 						return Response(status=400,response=msj)
 					else:
+						c=c+1
 						total=total+val	
 				elif(key=='frecuencia'):
 					if(type(val)!=int):
 						msj= "El dato de \"frecuencia\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
 						return Response(status=400,response=msj)
 					else:
+						c=c+1
 						total=total+val	
 				elif(key=='monto'):
 					if(type(val)!=int):
 						msj= "El dato de \"monto\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
 						return Response(status=400,response=msj)
 					else:
+						c=c+1
 						total=total+val	
 				else:
 					msj= "Key:"+key+" incorrecta para \"ponderaciones\",las keys deben ser las siguientes, en el siguiente orden: \"recencia\",\"frecuencia\",\"monto\""
@@ -184,28 +320,43 @@ def checkBodysetRFM(body):
 		if ((total>100) | (total<100)):
 			msj= "La suma de las ponderaciones recencia+frecuencia+monto deber ser 100, no "+str(total)+", favor de corregir"
 			return Response(status=400,response=msj)
+		if(c!=3):
+			msj= "Falta alguna key,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+			return Response(status=400,response=msj)	
 
-		for i in info_db:
+		c=0
+		for i in body['db']:
 			for key,val in i.items():
 				if(key=='host'):
 					if(type(val)!=str):
 						msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
 						return Response(status=400,response=msj)
+					else:
+						c=c+1	
 				elif(key=='db'):
 					if(type(val)!=str):
 						msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
+						return Response(status=400,response=msj)
+					else:
+						c=c+1	
 				elif(key=='user'):
 					if(type(val)!=str):
 						msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
+						return Response(status=400,response=msj)
+					else:
+						c=c+1	
 				elif(key=='password'):
 					if(type(val)!=str):
 						msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
-						return Response(status=400,response=msj)	
+						return Response(status=400,response=msj)
+					else:
+						c=c+1	
 				else:
 					msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""		
 					return Response(status=400,response=msj)	
+		if(c!=4):
+			msj= "Falta alguna key,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+			return Response(status=400,response=msj)
 		return 'OK'						
 
 def create_table():
@@ -385,16 +536,92 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 		cont=cont+1
 
 	print('inserts:',cont)
-	query="insert into "+name_table+"(id_client,Nombre,Recencia,Frecuencia,Monto,R,F,M,Segmento) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-	cur.executemany(query,val)
-	conn.commit()
-	cur.close()
-	conn.close()		
+	try:
+		query="insert into "+name_table+"(id_client,Nombre,Recencia,Frecuencia,Monto,R,F,M,Segmento) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+		cur.executemany(query,val)
+		conn.commit()
+		cur.close()
+		conn.close()
+	except pymysql.Error as e:
+		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+		print(msj)
+		return Response(status=400,response=msj)			
+	else:
+		return dataset
 
-	return dataset
+def getlifetime():
+		print('Entro a getlifetime')
+		try:
+			conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 
+			cur=conn.cursor()
 
+			#----Modify-----
+			query_accounts="SELECT id from accounts;"
+			#----Modify-----
+		
+			cur.execute(query_accounts)
 
+			res = cur.fetchall()
+
+			cur.close()
+
+			conn.close()
+
+		except pymysql.Error as e:
+			msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+			print(msj)
+			return Response(status=400,response=msj)
+		else:
+			filas=0
+			ids=[]
+			if(len(res)>0):
+				for r in res:
+					ids.append(r[0])
+
+			print('Total de cuentas:',len(ids))
+
+			lifetime_count=0
+
+			try:
+				conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+				cur=conn.cursor()
+
+				cont=0
+
+				for id in ids:
+					#----Modify-----
+					query_lifetime="SELECT TIMESTAMPDIFF(MONTH,(select MAX(op.date_entered) FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id AND a.id='%s') , (select MIN(op.date_entered) FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id AND a.id='%s'));"%(id,id)
+					#----Modify-----
+					cur.execute(query_lifetime)
+
+					res = cur.fetchall()
+
+					#print('Resultado de query:',res[0][0])
+
+					if(res[0][0]==None):
+						continue
+
+					cont=cont+1
+					lifetime_count=lifetime_count+abs(res[0][0])
+
+				#print('Total de meses',lifetime_count)
+				print('Cuentas con al menos 1 mes:',cont)
+
+				cur.close()
+
+				conn.close()
+
+			except pymysql.Error as e:
+				msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+				print(msj)
+				return Response(status=400,response=msj)			
+
+			else:
+				final_lifetime=lifetime_count/cont
+				#print('Vida promedio en meses:',final_lifetime)
+				return final_lifetime
 
 if __name__ == '__main__':
 	app.run(debug=True, host='0.0.0.0', port=5000)
