@@ -124,7 +124,7 @@ def setRFM(body=None):
 		first_dataset[target_R]=first_dataset[target_R].astype(str).str.replace('\D', '')
 		first_dataset[target_R]=first_dataset[target_R].astype(str).astype(int)
 		first_dataset[target_R]=first_dataset[target_R].fillna(first_dataset[target_R].mean())
-		first_dataset[target_F]=first_dataset[target_F].fillna(first_dataset[target_F].mean())
+		first_dataset[target_F]=first_dataset[target_F].fillna(0)
 		first_dataset[target_M]=first_dataset[target_M].fillna(0)
 
 
@@ -143,19 +143,18 @@ def setRFM(body=None):
 		return Response(status=200,response=msj)
 		#return last_dataset
 
-@app.route("/getCLV",methods=['POST'])
-def getCLV():
+@app.route("/setCLV",methods=['POST'])
+def setCLV(body=None):
 	body=request.get_json()
 	if body==None:
 		msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
 		return Response(status=400,response=msj)
 	else:
-		check=checkBodygetCLV(body)
+		check=checkBodysetCLV(body)
 		if (check!='OK'):
 			return check
 
 	info_db=body['db']		
-	id_client=body['id']
 
 	global host
 	global db
@@ -167,12 +166,12 @@ def getCLV():
 	user_db=info_db[2]['user']
 	pass_db=info_db[3]['password']
 
-	if 'lifetime' in body:
-		lifetime=body['lifetime']
+	if 'meanlife' in body:
+		meanlife=body['meanlife']
 	else:
-		lifetime=getlifetime()	
+		meanlife=getmeanlife()	
 
-
+	print('Promedio de  vida:',meanlife)
 
 	try:
 		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
@@ -180,9 +179,10 @@ def getCLV():
 		cur=conn.cursor()
 
 		#----Modify-----
-		query_extract="SELECT count(op.amount) as 'Frecuencia',AVG(op.amount) as 'Monto' FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id AND a.id='%s' group by a.id;" %(id_client)
+		query_extract="SELECT Id_cliente,Nombre,count(Monto) as 'Frecuencia',AVG(Monto) as 'Monto' FROM rfm_in group by Id_cliente;"
 		#----Modify-----
 		
+		cur.execute(query_fix)
 		cur.execute(query_extract)
 
 		res = cur.fetchall()
@@ -196,49 +196,79 @@ def getCLV():
 		print(msj)
 		return Response(status=400,response=msj)
 	else:
+		#----Modify-----
+		headers=['id','Nombre','Frecuencia','Monto']
+		#----Modify-----		
+
+		dataset_dummy={}
+		filas=0
+
+		for h in headers:
+			dataset_dummy[h]=[]
+			
 		if(len(res)>0):
-			#----Modify-----
-			frecuencia=res[0][0]
-			monto_prom=res[0][1]
-			#----Modify-----
+			for r in res:
+				filas+=1
+				for i in range(len(headers)):
+					dataset_dummy[headers[i]].append(r[i])
 		else:
-			msj= "Este registro no cuenta con información."
+			msj= "No hay registros para iniciar el proceso."
 			return Response(status=400,response=msj)
 
-		print('frecuencia:',float(frecuencia))
-		print('monto_prom:',float(monto_prom))
-		client_value=float(frecuencia)*float(monto_prom)
-		cvl=client_value*lifetime
-		data={}
-		data['Valor del cliente']=float(client_value)
-		data['Esperanza de Vida en meses']=lifetime
-		data['Customer Lifetime Value']=cvl
-		data['Id de cliente']=id_client
-		msj=json.dumps(data)
-		return Response(msj,status=200)
+		print('El numero de filas de este dataset es de:'+str(filas))
+
+		first_dataset=pd.DataFrame(dataset_dummy)
+		first_dataset[headers[2]]=first_dataset[headers[2]].astype(float)
+		first_dataset[headers[2]]=first_dataset[headers[2]].fillna(0)
+		first_dataset[headers[3]]=first_dataset[headers[3]].fillna(0)
+
+		first_dataset['Client_value']=first_dataset['Frecuencia']*first_dataset['Monto']
+		first_dataset['CLV']=first_dataset['Client_value']*float(meanlife)
+
+
+		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+		cur=conn.cursor()
+
+		cont=0
+		val=[]
+		for index,row in first_dataset.iterrows():
+			#query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
+			val.append((row[headers[0]],row[headers[1]],row[headers[2]],row[headers[3]],row['Client_value'],meanlife,row['CLV']))
+			cont=cont+1
+
+		print('inserts:',cont)
+		try:
+			query="insert into clv_out (Id_cliente,Nombre,Frecuencia_in,Monto_in,Valor_cliente,Vida_cliente,CLV) values (%s,%s,%s,%s,%s,%s,%s)"
+			cur.executemany(query,val)
+			conn.commit()
+			cur.close()
+			conn.close()
+		except pymysql.Error as e:
+			msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+			print(msj)
+			return Response(status=400,response=msj)			
+		else:
+			msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
+			return Response(msj,status=200)
 		
 
 
 
-def checkBodygetCLV(body):
+def checkBodysetCLV(body):
 		c=0
 		for i in body:
-			if(i!='id' and i!='db' and i!='lifetime'):
-				msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"id\",\"db\",\"lifetime\""
+			if(i!='id' and i!='db' and i!='meanlife'):
+				msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"db\",\"meanlife\" (opcional)"
 				return Response(status=400,response=msj)
 			else:
 				c=c+1
-		if(c!=3 and c!=2):
-				msj= "Falta alguna key,las keys deben ser las siguientes:\"id\",\"db\",opcional(\"lifetime\")"
+		if(c!=3 and c!=1):
+				msj= "Falta alguna key,las keys deben ser las siguientes:\"db\",opcional(\"meanlife\")"
 				return Response(status=400,response=msj)		
 
-		if(type(body['id'])!=str):
-			msj= "El id no es \"string\",favor de corregir"
-			return Response(status=400,response=msj)
-
-		if 'lifetime' in body:
-			if(type(body['lifetime'])!=int):
-				msj= "El lifetime no es \"integer\",favor de corregir"
+		if 'meanlife' in body:
+			if(type(body['meanlife'])!=int):
+				msj= "meanlife no es \"entero\",favor de corregir"
 				return Response(status=400,response=msj)	
 
 		c=0
@@ -538,15 +568,15 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 	else:
 		return dataset
 
-def getlifetime():
-		print('Entro a getlifetime')
+def getmeanlife():
+		print('Entro a getmeanlife')
 		try:
 			conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
 
 			cur=conn.cursor()
 
 			#----Modify-----
-			query_accounts="SELECT id from accounts;"
+			query_accounts="select distinct Id_cliente from rfm_in;"
 			#----Modify-----
 		
 			cur.execute(query_accounts)
@@ -570,7 +600,7 @@ def getlifetime():
 
 			print('Total de cuentas:',len(ids))
 
-			lifetime_count=0
+			meanlife_count=0
 
 			try:
 				conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
@@ -581,9 +611,9 @@ def getlifetime():
 
 				for id in ids:
 					#----Modify-----
-					query_lifetime="SELECT TIMESTAMPDIFF(MONTH,(select MAX(op.date_entered) FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id AND a.id='%s') , (select MIN(op.date_entered) FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id AND a.id='%s'));"%(id,id)
+					query_meanlife="SELECT TIMESTAMPDIFF(MONTH,(select MAX(Fecha) FROM rfm_in WHERE Id_cliente='%s') , (select MIN(Fecha) FROM rfm_in WHERE Id_cliente='%s'));" %(id,id)
 					#----Modify-----
-					cur.execute(query_lifetime)
+					cur.execute(query_meanlife)
 
 					res = cur.fetchall()
 
@@ -593,9 +623,9 @@ def getlifetime():
 						continue
 
 					cont=cont+1
-					lifetime_count=lifetime_count+abs(res[0][0])
+					meanlife_count=meanlife_count+abs(res[0][0])
 
-				#print('Total de meses',lifetime_count)
+				#print('Total de meses',meanlife_count)
 				print('Cuentas con al menos 1 mes:',cont)
 
 				cur.close()
@@ -608,9 +638,9 @@ def getlifetime():
 				return Response(status=400,response=msj)			
 
 			else:
-				final_lifetime=lifetime_count/cont
-				#print('Vida promedio en meses:',final_lifetime)
-				return final_lifetime
+				final_meanlife=meanlife_count/cont
+				#print('Vida promedio en meses:',final_meanlife)
+				return final_meanlife
 
 
 
