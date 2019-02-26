@@ -20,8 +20,8 @@ host=None
 db=None
 user_db=None
 pass_db=None
+query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
 
-name_table='RFM_table'
 id_RFM=None
 nombre_RFM=None
 target_R=None
@@ -68,9 +68,10 @@ def setRFM(body=None):
 		cur=conn.cursor()
 
 		#----Modify-----
-		query_extract="SELECT a.id,a.name,max(op.date_entered) as 'Recencia',count(op.amount) as 'Frecuencia',AVG(op.amount) as 'Monto' FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id group by a.id;"
+		query_extract="SELECT Id_cliente,Nombre,max(Fecha) as 'Recencia',count(Monto) as 'Frecuencia',AVG(Monto) as 'Monto' FROM rfm_in group by Id_cliente;"
 		#----Modify-----
 		
+		cur.execute(query_fix)
 		cur.execute(query_extract)
 
 		res = cur.fetchall()
@@ -79,7 +80,6 @@ def setRFM(body=None):
 
 		conn.close()
 
-		create_table()
 	except pymysql.Error as e:
 		msj= ("Error %d: %s" % (e.args[0], e.args[1]))
 		print(msj)
@@ -368,26 +368,6 @@ def checkBodysetRFM(body):
 			return Response(status=400,response=msj)
 		return 'OK'						
 
-def create_table():
-
-		print('Entro a create_table')
-
-		#db='RFM_Generator'
-
-		conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
-
-		cur=conn.cursor()
-
-		query='CREATE TABLE IF NOT EXISTS %s (id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,id_client VARCHAR(125),Nombre VARCHAR(125),Recencia char(20),Frecuencia int(5),Monto double(25,4),R int(5),F int(5),M int(5),Segmento char(30))'%(name_table)
-
-		cur.execute(query)
-
-		cur.close()
-
-		conn.close()
-
-		return		
-
 def setRecencia(first_dataset):
 	print('Entro a setRecencia')
 	dataset=first_dataset
@@ -546,7 +526,7 @@ def setCatego(last_dataset,segmentosx,ponderacionesx):
 
 	print('inserts:',cont)
 	try:
-		query="insert into "+name_table+"(id_client,Nombre,Recencia,Frecuencia,Monto,R,F,M,Segmento) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+		query="insert into rfm_out (Id_cliente,Nombre,Recencia_in,Frecuencia_in,Monto_in,Recencia_out,Frecuencia_out,Monto_out,Segmento) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 		cur.executemany(query,val)
 		conn.commit()
 		cur.close()
