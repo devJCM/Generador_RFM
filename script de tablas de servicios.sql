@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS nbo_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY K
 CREATE TABLE IF NOT EXISTS acreedor_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
                                    Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                    Id_cliente VARCHAR(125),
-                                   Acreedor int(1),
+                                   Acreedor CHAR(5),
                                    Acreedor_prob double(8,4)
                                    );
 ---
