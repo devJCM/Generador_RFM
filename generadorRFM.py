@@ -471,7 +471,8 @@ def setAcreedor(body=None):
         probabilidades=model.predict_proba(X_normalized)
 
         df1['predict_acreedor']=predict_acreedor
-        df1['acreedor_prob']=probabilidades[:,1]
+        df1['predict_acreedor']=np.where((df1['predict_acreedor']==1),'No','Si')
+        df1['acreedor_prob']=probabilidades[:,0]
 
         print('Se realizara insert....')
 
