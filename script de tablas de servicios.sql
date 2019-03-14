@@ -80,7 +80,26 @@ select * from nbo_model;
 select * from nbo_in;
 select * from nbo_out;
 select * from acreedor_out;
+--
+-- selects getcustomerinfo
+select max(Recencia_out) from rfm_out;
+select min(Recencia_out) from rfm_out;
+select max(Frecuencia_out) from rfm_out;
+select min(Frecuencia_out) from rfm_out;
+select max(Monto_out) from rfm_out;
+select min(Monto_out) from rfm_out;
+select max(Ejecucion),Recencia_out,Frecuencia_out,Monto_out,Segmento from rfm_out where Id_cliente='b9d12fcc-5280-4a87-838f-672d00e70088';
 
+select max(Valor_cliente) from clv_out;
+select min(Valor_cliente) from clv_out;
+select max(CLV) from clv_out;
+select min(CLV) from clv_out;
+select max(Ejecucion),Valor_cliente,Vida_cliente,CLV from clv_out where Id_cliente='b9d12fcc-5280-4a87-838f-672d00e70088';
+
+select max(Ejecucion),Acreedor,Acreedor_prob from acreedor_out where Id_cliente='b9d12fcc-5280-4a87-838f-672d00e70088';
+
+select max(Ejecucion),Producto_Predict,Producto_1,Producto_2,Producto_3,Producto_4,Producto_5 from nbo_out where Id_cliente='b9d12fcc-5280-4a87-838f-672d00e70088';
+--
 -- select fix
 SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
 --

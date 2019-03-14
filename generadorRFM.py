@@ -474,6 +474,7 @@ def setAcreedor(body=None):
         df1['predict_acreedor']=np.where((df1['predict_acreedor']==1),'No','Si')
         df1['acreedor_prob']=probabilidades[:,0]
 
+
         print('Se realizara insert....')
 
         conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
@@ -502,13 +503,156 @@ def setAcreedor(body=None):
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
             return Response(msj,status=200)         
 
+@app.route("/getCustomerInfo",methods=['POST'])
+def getCustomerInfo(body=None):
+    body=request.get_json()
+    if body==None:
+        msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+        return Response(status=400,response=msj)
+    else:
+        check=checkBodygetCustomerInfo(body)
+        if (check!='OK'):
+            return check
+
+        id_cliente=body['id']
+        info_db=body['db']      
+
+        global host
+        global db
+        global user_db
+        global pass_db
+
+        host=info_db[0]['host']
+        db=info_db[1]['db']
+        user_db=info_db[2]['user']
+        pass_db=info_db[3]['password']
+
+        qrfm="select max(Ejecucion),Recencia_out,Frecuencia_out,Monto_out,Segmento from rfm_out where Id_cliente='%s';" %(id_cliente)
+        
+        qclv="select max(Ejecucion),Valor_cliente,Vida_cliente,CLV from clv_out where Id_cliente='%s';" %(id_cliente)
+
+        qacreedor="select max(Ejecucion),Acreedor,Acreedor_prob from acreedor_out where Id_cliente='%s';" %(id_cliente)
+
+        qnbo="select max(Ejecucion),Producto_Predict,Producto_1,Producto_2,Producto_3,Producto_4,Producto_5 from nbo_out where Id_cliente='%s';" %(id_cliente)
 
 
+        Data={'RFM':{},'CLV':{},'NBO':{},'Acreedor':None,'Acreedor_prob':None}
+
+        limit_values=getlimitvalues()
+        Data['limit_values']=limit_values
+
+        try:
+            conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+            cur=conn.cursor()
+                   
+            cur.execute(query_fix)
+
+            cur.execute(qrfm)
+            res=cur.fetchall()
+            Data['RFM']['R']=res[0][1]
+            Data['RFM']['F']=res[0][2]
+            Data['RFM']['M']=res[0][3]
+            Data['RFM']['Segmento']=res[0][4]
+
+            cur.execute(qclv)
+            res=cur.fetchall()
+            Data['CLV']['CV']=res[0][1]
+            Data['CLV']['LifeTime']=res[0][2]
+            Data['CLV']['CLV']=res[0][3]
+
+            cur.execute(qacreedor)
+            res=cur.fetchall()
+            Data['Acreedor']=res[0][1]
+            Data['Acreedor_prob']=res[0][2]
+
+            cur.execute(qnbo)
+            res=cur.fetchall()
+            Data['NBO']['Producto_Predict']=res[0][1]
+            Data['NBO']['Producto_1']=res[0][2]
+            Data['NBO']['Producto_2']=res[0][3]
+            Data['NBO']['Producto_3']=res[0][4]
+            Data['NBO']['Producto_4']=res[0][5]
+            Data['NBO']['Producto_5']=res[0][6]
+
+            cur.close()
+
+            conn.close()
+
+        except pymysql.Error as e:
+            msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+            print(msj)
+            return Response(status=400,response=msj)
+        else:
+            Data['RFM']['R_n']=(Data['RFM']['R']-limit_values['rmin'])/(limit_values['rmax']-limit_values['rmin'])
+            Data['RFM']['F_n']=(Data['RFM']['F']-limit_values['fmin'])/(limit_values['fmax']-limit_values['fmin'])
+            Data['RFM']['M_n']=(Data['RFM']['M']-limit_values['mmin'])/(limit_values['mmax']-limit_values['mmin'])
+            Data['CLV']['CV_n']=(Data['CLV']['CV']-limit_values['cvmin'])/(limit_values['cvmax']-limit_values['cvmin'])
+            Data['CLV']['CLV_n']=(Data['CLV']['CLV']-limit_values['clvmin'])/(limit_values['clvmax']-limit_values['clvmin'])
+
+            #msj= ("Todo correcto")
+            #return Response(status=200,response=msj)
+            msj=json.dumps(Data)
+            return Response(msj,status=200)
+
+
+
+
+
+
+def checkBodygetCustomerInfo(body):
+        c=0
+        for i in body:
+            if(i!='id' and i!='db'):
+                msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"id\",\"db\""
+                return Response(status=400,response=msj)
+            else:
+                c=c+1
+        if(c!=2):
+                msj= "Falta alguna key,las keys deben ser las siguientes:\"id\",\"db\""
+                return Response(status=400,response=msj)        
+        if(type(body['id'])!=str):
+                msj= "Id no es \"string\",favor de corregir"
+                return Response(status=400,response=msj)    
+        c=0
+        for i in body['db']:
+            for key,val in i.items():
+                if(key=='host'):
+                    if(type(val)!=str):
+                        msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
+                        return Response(status=400,response=msj)
+                    else:
+                        c=c+1   
+                elif(key=='db'):
+                    if(type(val)!=str):
+                        msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
+                        return Response(status=400,response=msj)
+                    else:
+                        c=c+1   
+                elif(key=='user'):
+                    if(type(val)!=str):
+                        msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
+                        return Response(status=400,response=msj)
+                    else:
+                        c=c+1   
+                elif(key=='password'):
+                    if(type(val)!=str):
+                        msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
+                        return Response(status=400,response=msj)
+                    else:
+                        c=c+1   
+                else:
+                    msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""       
+                    return Response(status=400,response=msj)    
+        if(c!=4):
+            msj= "Falta alguna key,las keys deben ser las siguientes:\"hots\",\"db\",\"user\",\"password\""
+            return Response(status=400,response=msj)
+        return 'OK'                                         
 
 def checkBodysetCLV(body):
         c=0
         for i in body:
-            if(i!='id' and i!='db' and i!='meanlife'):
+            if(i!='db' and i!='meanlife'):
                 msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"db\",\"meanlife\" (opcional)"
                 return Response(status=400,response=msj)
             else:
@@ -553,9 +697,9 @@ def checkBodysetCLV(body):
                     msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""       
                     return Response(status=400,response=msj)    
         if(c!=4):
-            msj= "Falta alguna key,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+            msj= "Falta alguna key,las keys deben ser las siguientes:\"hots\",\"db\",\"user\",\"password\""
             return Response(status=400,response=msj)
-        return 'OK'                                         
+        return 'OK'                                          
 
 def checkBodysetRFM(body):
         c=0
@@ -611,7 +755,7 @@ def checkBodysetRFM(body):
             msj= "La suma de las ponderaciones recencia+frecuencia+monto deber ser 100, no "+str(total)+", favor de corregir"
             return Response(status=400,response=msj)
         if(c!=3):
-            msj= "Falta alguna key,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+            msj= "Falta alguna key,las keys deben ser las siguientes:\"recencia\",\"frecuencia\",\"monto\""
             return Response(status=400,response=msj)    
 
         c=0
@@ -645,7 +789,7 @@ def checkBodysetRFM(body):
                     msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""       
                     return Response(status=400,response=msj)    
         if(c!=4):
-            msj= "Falta alguna key,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+            msj= "Falta alguna key,las keys deben ser las siguientes:\"hots\",\"db\",\"user\",\"password\""
             return Response(status=400,response=msj)
         return 'OK'                     
 
@@ -912,7 +1056,64 @@ def normalize_columns(dataset,columns):
     new_dataset=pd.concat([dataset,X_normalized],axis=1)#axis=1-->para agregar columna y no fila
     return new_dataset
 
+def getlimitvalues():
 
+        qrmax='select max(Recencia_out) from rfm_out;'
+        qrmin='select min(Recencia_out) from rfm_out;'
+        qfmax='select max(Frecuencia_out) from rfm_out;'
+        qfmin='select min(Frecuencia_out) from rfm_out;'
+        qmmax='select max(Monto_out) from rfm_out;'
+        qmmin='select min(Monto_out) from rfm_out;'
+    
+        qcvmax='select max(Valor_cliente) from clv_out;'
+        qcvmin='select min(Valor_cliente) from clv_out;'
+        qclvmax='select max(CLV) from clv_out;'
+        qclvmin='select min(CLV) from clv_out;'
+
+        obj={}
+
+        try:
+            conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+            cur=conn.cursor()
+
+                   
+            cur.execute(query_fix)
+
+            cur.execute(qrmax)
+            obj['rmax'] = cur.fetchall()[0][0]
+            cur.execute(qrmin)
+            obj['rmin'] = cur.fetchall()[0][0]
+
+            cur.execute(qfmax)
+            obj['fmax'] = cur.fetchall()[0][0]
+            cur.execute(qfmin)
+            obj['fmin'] = cur.fetchall()[0][0]
+
+            cur.execute(qmmax)
+            obj['mmax'] = cur.fetchall()[0][0]
+            cur.execute(qmmin)
+            obj['mmin'] = cur.fetchall()[0][0]
+
+            cur.execute(qcvmax)
+            obj['cvmax']=cur.fetchall()[0][0]
+            cur.execute(qcvmin)
+            obj['cvmin']=cur.fetchall()[0][0]
+
+            cur.execute(qclvmax)
+            obj['clvmax']=cur.fetchall()[0][0]
+            cur.execute(qclvmin)
+            obj['clvmin']=cur.fetchall()[0][0]
+
+            cur.close()
+            conn.close()
+
+        except pymysql.Error as e:
+            msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+            print(msj)
+            return Response(status=400,response=msj)
+        else:
+            return obj
 
 
 
