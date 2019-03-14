@@ -112,8 +112,10 @@ SELECT Id_cliente,max(Fecha) as 'Recencia',count(Monto) as 'Frecuencia',AVG(Mont
 --
 -- llenar datos de rfm_in
 insert into rfm_in(Id_cliente,Fecha,Monto)
-SELECT a.id,op.date_entered,op.amount FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id;                                   
+SELECT a.id,op.date_entered,op.amount FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op.deleted=0;                                   
 --
+
+
 -- llenar datos de nbo_model
 SET sql_mode = '';
 insert into nbo_model(Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Empleados,Activo_fijo,Potencial,Cheques,Etapa,Producto,Vigencia)

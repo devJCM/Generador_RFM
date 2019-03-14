@@ -569,11 +569,17 @@ def getCustomerInfo(body=None):
             cur.execute(qnbo)
             res=cur.fetchall()
             Data['NBO']['Producto_Predict']=res[0][1]
-            Data['NBO']['Producto_1']=res[0][2]
-            Data['NBO']['Producto_2']=res[0][3]
-            Data['NBO']['Producto_3']=res[0][4]
-            Data['NBO']['Producto_4']=res[0][5]
-            Data['NBO']['Producto_5']=res[0][6]
+            for idx,i  in enumerate(res[0]):
+                if(idx==0 or idx==1):
+                    continue
+                temp='Producto_'+str(idx-1)
+                Data['NBO'][temp]=i    
+            
+            #Data['NBO']['Producto_1']=res[0][2]
+            #Data['NBO']['Producto_2']=res[0][3]
+            #Data['NBO']['Producto_3']=res[0][4]
+            #Data['NBO']['Producto_4']=res[0][5]
+            #Data['NBO']['Producto_5']=res[0][6]
 
             cur.close()
 
