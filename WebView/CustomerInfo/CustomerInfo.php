@@ -94,7 +94,7 @@
 
 			var id=getGetVariable("id");
 			//var id="377a50ed-a657-db1c-c858-591b269b1e6c";
-			var url='http://localhost/getCustomerInfo.php';
+			var url='http://'+window.location.host+'/CustomerInfo/getCustomerInfo.php';
 			var post={"id":id,};
 
 			$.ajax({
