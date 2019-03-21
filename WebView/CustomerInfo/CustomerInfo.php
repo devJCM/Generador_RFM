@@ -1,97 +1,106 @@
 <!DOCTYPE html>
 <html>
 	<head>
+        <title>Customer</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <!-- Plotly.js -->
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <!-- Jquery -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-		<title>Customer</title>
-		<!-- Plotly.js -->
-		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
         <style type="text/css">
-          input {
-            display: : inline;
-            text-align: center;
-            background: #332d4f;
-            color: #21ef8b;
-            border-color: #21ef8b;
-        }
-          label{
-            margin-left: 10px;
-        }
-          div.section{
-            margin: 20px;
-        }
-          table, th, td {
-            border: 1px solid #21ef8b;
-            border-collapse: collapse;
-            text-align: center;
-        }
-        body{
-            background: #332d4f;
-            color: #21ef8b;
-        }      
+            input {
+                text-align: center;
+            }
+            table, th, td {
+                text-align: center;
+            }    
+            html {
+              font-size: 14px;
+            }
+            body { font-family: 'Open Sans',"Helvetica Neue",'Oswald' !important; } 
         </style>
 	</head>
 
 	<body>
-
-        <h2>Snapshot de Cliente</h2>
-
-		<div id="plot"><!-- Plotly chart will be drawn inside this DIV --></div>
-
-		<div id='cointainer'>
-            <div class="section">
-                <h2>Credito</h2>
-                <label for="Acreedor">Viable para credito</label>
-                <input type="text" id="Acreedor" disabled>
-                <label for="Acreedor_prob">Nivel de Confianza</label>
-                <input type="text" id="Acreedor_prob" disabled>
-            </div> 
-			<div class="section">
-                <h2>RFM</h2>
-				<label for="R">R</label>
-				<input type="text" id="R" disabled>
-                <label for="F">F</label>
-                <input type="text" id="F" disabled>
-                <label for="M">M</label>
-                <input type="text" id="M" disabled>
-                <label for="Segmento">Segmento</label>
-                <input type="text" id="Segmento" class="rfm" disabled>
+    	<div class="container">
+            <h4>Snapshot de Cliente</h4>
+            <div id="plot"><!-- Plotly chart will be drawn inside this DIV --></div>
+            <h4>Credito</h4>
+            <div class="row">
+                <div class="col">
+                    <label for="Acreedor">Viable para credito</label>
+                      <input type="text" id="Acreedor" class="form-control" aria-describedby="basic-addon3" disabled="">
+                </div>    
+                <div class="col">    
+                    <label for="Acreedor_prob">Nivel de Confianza</label>
+                    <input type="text" id="Acreedor_prob" class="form-control" aria-describedby="basic-addon3" disabled>
+                </div>    
+            </div>
+            <br> 
+            <h4>RFM</h4>
+			<div class="row">
+                <div class="col-sm-3"> 
+				    <label for="R">R</label>
+				    <input type="text" id="R" class="form-control" aria-describedby="basic-addon3" disabled>
+                </div>    
+                <div class="col-sm-3"> 
+                    <label for="F">F</label>
+                    <input type="text" id="F" class="form-control" aria-describedby="basic-addon3" disabled>
+                </div>    
+                <div class="col-sm-3"> 
+                    <label for="M">M</label>
+                    <input type="text" id="M" class="form-control" aria-describedby="basic-addon3" disabled>
+                </div>  
+                <div class="col-sm-3"> 
+                    <label for="Segmento">Segmento</label>
+                    <input type="text" id="Segmento" class="form-control" aria-describedby="basic-addon3" disabled>
+                </div>    
 			</div>
-            <div class="section">
-                <h2>CLV</h2>
-                <div>
+            <br>
+            <h4>CLV</h4>
+            <div class="row">
+                <div class="col-sm-4">
                     <label for="LifeTime">Tiempo de Vida Promedio de Cliente (Meses)</label>
-                    <input type="text" id="LifeTime" disabled>
+                    <input type="text" id="LifeTime" class="form-control" aria-describedby="basic-addon3" disabled>
                 </div>
-                <br>
-                <div>    
+                <div class="col-sm-4">   
                     <label for="CV">Valor de Cliente</label>
-                    <input type="text" id="CV" disabled>
+                    <input type="text" id="CV" class="form-control" aria-describedby="basic-addon3" disabled>
                 </div>
-                <br>
-                <div>    
+                <div class="col-sm-4">  
                     <label for="CLV">Customer LifeTime Value</label>
-                    <input type="text" id="CLV" disabled>
+                    <input type="text" id="CLV" class="form-control" aria-describedby="basic-addon3" disabled>
                 </div>
             </div>
-            <div class="section">
-                <h2>NBO</h2>
-                <div>    
+            <br>
+            <h4>NBO</h4>
+            <div class="row">  
+                <div class="col-6">
                     <label for="Product_Predict">Producto Recomendado</label>
-                    <input type="text" id="Product_Predict" disabled>
+                    <input type="text" id="Product_Predict" class="form-control" aria-describedby="basic-addon3" disabled>
                 </div>
-                <div class="section">
-                    <table id='productos'>
+            </div>
+            <br>
+            <div class="row">
+                <table id='productos' class="table">
+                    <thread>
                         <tr>
-                            <th>Producto</th>
-                            <th>Nivel de Confianza</th>
+                            <th scope="col">#</th>
+                            <th scope="col">Producto</th>
+                            <th scope="col">Nivel de Confianza</th>
                         </tr>
-                     </table>
-                </div>
-            </div>    
-		</div>	
-
-		<script>
-
+                    </thread>
+                    <tbody>
+                        <tr></tr>
+                    </tbody>    
+                </table>
+            </div>
+ 		</div>	
+        <script>
 			var id=getGetVariable("id");
 			//var id="377a50ed-a657-db1c-c858-591b269b1e6c";
 			var url='http://'+window.location.host+'/CustomerInfo/getCustomerInfo.php';
@@ -142,8 +151,8 @@
 				  name: 'Group B',
 				  hoverinfo: 'theta',
                   fill: 'toself',
-                  fillcolor: '#rgba(33,239,139,0.7)',
-                  line : {color : '21ef8b'}       
+                  fillcolor: '#rgba(22, 108, 227, 0.54)',
+                  line : {color : '#166ce3'}       
 				  }
 				]
 				layout = {
@@ -151,18 +160,20 @@
 				    radialaxis: {
 				      visible: false,
 				      range: [0, 1],
-                      color: '#21ef8b' //color de los ejes radiales
+                      color: '#166ce3' //color de los ejes radiales
 				    },
                     bgcolor: 'rgba(0,0,0,0)' //color del grafico
                   },
                   paper_bgcolor: 'rgba(0,0,0,0)', //color del layout
-                  font: {size:'20',color: '21ef8b'}
+                  //font: {size:'20',color: '21ef8b'}
                 }
 
-				Plotly.plot("plot", data, layout, {showSendToCloud: false})	
+				Plotly.plot("plot", data, layout,{responsive: true})	
             }
 
 			function fillfields(client_info){
+                var cv=parseFloat(client_info.CLV.CV);
+                var clv=parseFloat(client_info.CLV.CLV);
 
                 $('#Acreedor').val(client_info.Acreedor);
                 $('#Acreedor_prob').val(client_info.Acreedor_prob+'%');
@@ -171,13 +182,15 @@
                 $('#M').val(client_info.RFM.M);
                 $('#Segmento').val(client_info.RFM.Segmento);
                 $('#LifeTime').val(client_info.CLV.LifeTime);
-                $('#CV').val(client_info.CLV.CV);
-                $('#CLV').val(client_info.CLV.CLV);
+                $('#CV').val('$ '+cv.toFixed(4));
+                $('#CLV').val('$ '+clv.toFixed(4));
                 $('#Product_Predict').val(client_info.NBO.Product_Predict);
 
                 var numproductos=Object.keys(client_info.NBO).length-1;
                 for (var i = 1; i <= numproductos; i++) {
-                    $('#productos tr:last').after('<tr><td>Producto '+i+'</td><td>'+client_info.NBO['Producto_'+i]+'%</td></tr>');
+                    var temp=parseFloat(client_info.NBO['Producto_'+i]);
+
+                    $('#productos tr:last').after('<tr><th scope="row">'+i+'</th><td>Producto '+i+'</td><td>'+temp.toFixed(2)+'%</td></tr>');
                 }
     		}
 
