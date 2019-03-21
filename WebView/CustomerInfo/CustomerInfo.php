@@ -9,9 +9,11 @@
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <!-- Jquery -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>
+        <!--fonts-->
+        <!--<link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>-->
         <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
         <style type="text/css">
+
             input {
                 text-align: center;
             }
@@ -19,9 +21,15 @@
                 text-align: center;
             }    
             html {
-              font-size: 14px;
+              font-size: 12px;
             }
-            body { font-family: 'Open Sans',"Helvetica Neue",'Oswald' !important; } 
+            body { 
+                font-family: 'Open Sans',"Helvetica Neue" !important;
+            }
+            h4{ 
+                font-family: 'inherit'  !important; 
+            } 
+
         </style>
 	</head>
 
