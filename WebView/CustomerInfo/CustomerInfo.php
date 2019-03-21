@@ -11,7 +11,8 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <!--fonts-->
         <!--<link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>-->
-        <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans" />
+        <!--CSS-->
         <style type="text/css">
 
             input {
@@ -28,7 +29,7 @@
               font-size: 12px;
             }
             body { 
-                font-family: 'Open Sans',"Helvetica Neue" !important;
+                font-family: 'Open Sans' !important;
                 color: #222;
             }
             h4{ 
@@ -185,6 +186,7 @@
                   },
                   paper_bgcolor: 'rgba(0,0,0,0)', //color del layout
                   //font: {size:'20',color: '21ef8b'}
+                  font: {family: "'Open Sans'"}
                 }
 
 				Plotly.plot("plot", data, layout,{responsive: true})	
