@@ -15,7 +15,11 @@
         <style type="text/css">
 
             input {
-                text-align: center;
+                /* text-align: center; */
+                color: #222 !important;
+                background-color: rgba(0,0,0,0) !important;
+                border-color: rgba(0,0,0,0) !important;
+                font-size: 14px !important;
             }
             table, th, td {
                 text-align: center;
@@ -25,9 +29,16 @@
             }
             body { 
                 font-family: 'Open Sans',"Helvetica Neue" !important;
+                color: #222;
             }
             h4{ 
                 font-family: 'inherit'  !important; 
+                margin-left: 10px;
+            }
+            label{
+                color: #a5a5a5;
+                margin-left: 10px;
+                font-size: 12px !important;
             } 
 
         </style>
