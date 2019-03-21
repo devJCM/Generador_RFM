@@ -45,7 +45,7 @@
 	</head>
 
 	<body>
-    	<div class="container">
+    	<div class="container-fluid">
             <h4>Snapshot de Cliente</h4>
             <div id="plot"><!-- Plotly chart will be drawn inside this DIV --></div>
             <h4>Credito</h4>
