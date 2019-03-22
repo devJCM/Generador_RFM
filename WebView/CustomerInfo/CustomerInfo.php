@@ -21,6 +21,7 @@
                 background-color: rgba(0,0,0,0) !important;
                 border-color: rgba(0,0,0,0) !important;
                 font-size: 14px !important;
+                margin-top: -10px !important;
             }
             table, th, td {
                 text-align: center;
@@ -33,8 +34,9 @@
                 color: #222;
             }
             h4{ 
-                font-family: 'inherit'  !important; 
+               /* font-family: 'inherit'  !important;*/ 
                 margin-left: 10px;
+                color: #000 !important;
             }
             label{
                 color: #a5a5a5;
@@ -60,7 +62,7 @@
                     <input type="text" id="Acreedor_prob" class="form-control" aria-describedby="basic-addon3" disabled>
                 </div>    
             </div>
-            <br> 
+            <br><br> 
             <h4>RFM</h4>
 			<div class="row">
                 <div class="col-sm-3"> 
@@ -80,7 +82,7 @@
                     <input type="text" id="Segmento" class="form-control" aria-describedby="basic-addon3" disabled>
                 </div>    
 			</div>
-            <br>
+            <br><br>
             <h4>CLV</h4>
             <div class="row">
                 <div class="col-sm-4">
@@ -96,7 +98,7 @@
                     <input type="text" id="CLV" class="form-control" aria-describedby="basic-addon3" disabled>
                 </div>
             </div>
-            <br>
+            <br><br>
             <h4>NBO</h4>
             <div class="row">  
                 <div class="col-6">
