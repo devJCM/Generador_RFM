@@ -33,10 +33,13 @@
                 font-family: 'Open Sans' !important;
                 color: #222;
             }
-            h4{ 
+            h4,h2{ 
                /* font-family: 'inherit'  !important;*/ 
                 margin-left: 10px;
                 color: #000 !important;
+                border-bottom: 1px solid #cfcfcf;
+                /*border-top: 1px solid #dcdcdc;
+                /*background:#f5f5f5;*/
             }
             label{
                 color: #a5a5a5;
@@ -49,56 +52,62 @@
 
 	<body>
     	<div class="container-fluid">
-            <h4>Snapshot de Cliente</h4>
-            <div id="plot"><!-- Plotly chart will be drawn inside this DIV --></div>
-            <h4>Credito</h4>
-            <div class="row">
-                <div class="col">
-                    <label for="Acreedor">Viable para credito</label>
-                      <input type="text" id="Acreedor" class="form-control" aria-describedby="basic-addon3" disabled="">
-                </div>    
-                <div class="col">    
-                    <label for="Acreedor_prob">Nivel de Confianza</label>
-                    <input type="text" id="Acreedor_prob" class="form-control" aria-describedby="basic-addon3" disabled>
-                </div>    
+            <h2>Snapshot de Cliente</h2>
+            <div class="row" id="section1">
+                <div class="col" id="lefttside">
+                    <div class="row justify-content-center" id="plot"><!-- Plotly chart will be drawn inside this DIV --></div>
+                </div>
+                <div class="col align-self-center" id="righttside">
+                    <h4>Credito</h4>
+                    <div class="row">
+                        <div class="col">
+                            <label for="Acreedor">Viable para credito</label>
+                              <input type="text" id="Acreedor" class="form-control" aria-describedby="basic-addon3" disabled="">
+                        </div>    
+                        <div class="col">    
+                            <label for="Acreedor_prob">Nivel de Confianza</label>
+                            <input type="text" id="Acreedor_prob" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>    
+                    </div>
+                    <br>
+                    <h4>RFM</h4>
+                    <div class="row">
+                        <div class="col-md-3"> 
+                            <label for="R">R</label>
+                            <input type="text" id="R" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>    
+                        <div class="col-md-3"> 
+                            <label for="F">F</label>
+                            <input type="text" id="F" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>    
+                        <div class="col-md-3"> 
+                            <label for="M">M</label>
+                            <input type="text" id="M" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>  
+                        <div class="col-md-3"> 
+                            <label for="Segmento">Segmento</label>
+                            <input type="text" id="Segmento" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>    
+                    </div>
+                    <br>
+                    <h4>CLV</h4>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <label for="LifeTime">Tiempo de Vida Promedio de Cliente (Meses)</label>
+                            <input type="text" id="LifeTime" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>
+                        <div class="col-lg-4">   
+                            <label for="CV">Valor de Cliente</label>
+                            <input type="text" id="CV" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>
+                        <div class="col-lg-4">  
+                            <label for="CLV">Customer LifeTime Value</label>
+                            <input type="text" id="CLV" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <br><br> 
-            <h4>RFM</h4>
-			<div class="row">
-                <div class="col-sm-3"> 
-				    <label for="R">R</label>
-				    <input type="text" id="R" class="form-control" aria-describedby="basic-addon3" disabled>
-                </div>    
-                <div class="col-sm-3"> 
-                    <label for="F">F</label>
-                    <input type="text" id="F" class="form-control" aria-describedby="basic-addon3" disabled>
-                </div>    
-                <div class="col-sm-3"> 
-                    <label for="M">M</label>
-                    <input type="text" id="M" class="form-control" aria-describedby="basic-addon3" disabled>
-                </div>  
-                <div class="col-sm-3"> 
-                    <label for="Segmento">Segmento</label>
-                    <input type="text" id="Segmento" class="form-control" aria-describedby="basic-addon3" disabled>
-                </div>    
-			</div>
-            <br><br>
-            <h4>CLV</h4>
-            <div class="row">
-                <div class="col-sm-4">
-                    <label for="LifeTime">Tiempo de Vida Promedio de Cliente (Meses)</label>
-                    <input type="text" id="LifeTime" class="form-control" aria-describedby="basic-addon3" disabled>
-                </div>
-                <div class="col-sm-4">   
-                    <label for="CV">Valor de Cliente</label>
-                    <input type="text" id="CV" class="form-control" aria-describedby="basic-addon3" disabled>
-                </div>
-                <div class="col-sm-4">  
-                    <label for="CLV">Customer LifeTime Value</label>
-                    <input type="text" id="CLV" class="form-control" aria-describedby="basic-addon3" disabled>
-                </div>
-            </div>
-            <br><br>
+            <br>  
             <h4>NBO</h4>
             <div class="row">  
                 <div class="col-6">
@@ -108,7 +117,7 @@
             </div>
             <br>
             <div class="row">
-                <table id='productos' class="table">
+                <table id='productos' class="table ">
                     <thread>
                         <tr>
                             <th scope="col">#</th>
@@ -188,7 +197,17 @@
                   },
                   paper_bgcolor: 'rgba(0,0,0,0)', //color del layout
                   //font: {size:'20',color: '21ef8b'}
-                  font: {family: "'Open Sans'"}
+                  font: {family: "'Open Sans'"},
+                  autosize:false,
+                  width:400,
+                  height:400,
+                  margin:{
+                        l:75,
+                        r:75,
+                        b:0,
+                        t:0,
+                        pad:0
+                    }
                 }
 
 				Plotly.plot("plot", data, layout,{responsive: true})	
