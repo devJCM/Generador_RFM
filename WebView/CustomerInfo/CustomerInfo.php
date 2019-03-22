@@ -33,7 +33,7 @@
                 font-family: 'Open Sans' !important;
                 color: #222;
             }
-            h4,h2{ 
+            h2,h4{ 
                /* font-family: 'inherit'  !important;*/ 
                 margin-left: 10px;
                 color: #000 !important;
