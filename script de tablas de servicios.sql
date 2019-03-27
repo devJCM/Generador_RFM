@@ -46,12 +46,14 @@ CREATE TABLE IF NOT EXISTS nbo_model (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY
                                    Potencial double(16,4),
                                    Cheques double(16,4),
                                    Etapa CHAR(5),
+                                   Subetapa CHAR(5),
+                                   Monto double(28,6),
                                    Producto char(20)
                                    );
 
 CREATE TABLE IF NOT EXISTS nbo_in select * from nbo_model;
 
-alter table nbo_in drop column Etapa,drop column Producto;
+alter table nbo_in drop column Etapa,drop column Subetapa,drop column Monto,drop column Producto;
 --
 -- nbo_out --
 CREATE TABLE IF NOT EXISTS nbo_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -70,7 +72,8 @@ CREATE TABLE IF NOT EXISTS acreedor_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIM
                                    Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                    Id_cliente VARCHAR(125),
                                    Acreedor CHAR(5),
-                                   Acreedor_prob double(8,4)
+                                   Acreedor_prob double(8,4),
+								   Monto_predict double(28,6)
                                    );
 ---
 select * from rfm_in;
@@ -112,14 +115,13 @@ SELECT Id_cliente,max(Fecha) as 'Recencia',count(Monto) as 'Frecuencia',AVG(Mont
 --
 -- llenar datos de rfm_in
 insert into rfm_in(Id_cliente,Fecha,Monto)
-SELECT a.id,op.date_entered,op.amount FROM accounts a, opportunities op,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op.deleted=0;                                   
+SELECT a.id,op.date_entered,op2.monto_c FROM accounts a, opportunities op,opportunities_cstm op2,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op2.id_c=ao.opportunity_id and op.deleted=0;                                   
 --
-
 
 -- llenar datos de nbo_model
 SET sql_mode = '';
-insert into nbo_model(Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Empleados,Activo_fijo,Potencial,Cheques,Etapa,Producto)
+insert into nbo_model(Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Empleados,Activo_fijo,Potencial,Cheques,Etapa,Subetapa,Monto,Producto)
 select a.id_c,a.tct_macro_sector_ddw_c,a.sectoreconomico_c,a.subsectoreconomico_c,a.actividadeconomica_c,a.ventas_anuales_c,
 		a.empleados_c,a.activo_fijo_c,a.potencial_cuenta_c,a.tct_prom_cheques_cur_c,
-        op.tct_etapa_ddw_c,op.tipo_producto_c
+        op.tct_etapa_ddw_c,op.estatus_c,op.monto_c,op.tipo_producto_c
 FROM accounts_cstm a, opportunities_cstm op,accounts_opportunities ao WHERE a.id_c=ao.account_id AND op.id_c=ao.opportunity_id;
