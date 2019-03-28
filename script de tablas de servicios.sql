@@ -8,6 +8,7 @@ drop table if exists nbo_out;
 drop table if exists acreedor_out;
 
 create database CustomerInfo;
+use CustomerInfo;
 
 -- rfm_in --
 CREATE TABLE IF NOT EXISTS rfm_in (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
