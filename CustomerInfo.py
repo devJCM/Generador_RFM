@@ -452,17 +452,6 @@ def getCustomerInfo(body=None):
             return check
 
         id_cliente=body['id']
-        info_db=body['db']      
-
-        global host
-        global db
-        global user_db
-        global pass_db
-
-        host=info_db[0]['host']
-        db=info_db[1]['db']
-        user_db=info_db[2]['user']
-        pass_db=info_db[3]['password']
 
         qrfm="select max(Ejecucion),Recencia_out,Frecuencia_out,Monto_out,Segmento from rfm_out where Id_cliente='%s';" %(id_cliente)
         
@@ -546,50 +535,18 @@ def getCustomerInfo(body=None):
 def checkBodygetCustomerInfo(body):
         c=0
         for i in body:
-            if(i!='id' and i!='db'):
-                msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"id\",\"db\""
+            if(i!='id'):
+                msj= "Key:"+i+" incorrecta,la key debe ser la siguiente:\"id\""
                 return Response(status=400,response=msj)
             else:
                 c=c+1
-        if(c!=2):
-                msj= "Falta alguna key,las keys deben ser las siguientes:\"id\",\"db\""
+        if(c!=1):
+                msj= "Falta alguna key,la key debe ser la siguiente:\"id\""
                 return Response(status=400,response=msj)        
         if(type(body['id'])!=str):
                 msj= "Id no es \"string\",favor de corregir"
                 return Response(status=400,response=msj)    
-        c=0
-        for i in body['db']:
-            for key,val in i.items():
-                if(key=='host'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                elif(key=='db'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                elif(key=='user'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                elif(key=='password'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                else:
-                    msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""       
-                    return Response(status=400,response=msj)    
-        if(c!=4):
-            msj= "Falta alguna key,las keys deben ser las siguientes:\"hots\",\"db\",\"user\",\"password\""
-            return Response(status=400,response=msj)
+        
         return 'OK'                                         
 
 def checkBodysetCLV(body):
