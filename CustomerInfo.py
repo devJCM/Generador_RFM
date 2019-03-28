@@ -542,8 +542,13 @@ def addRFM(body=None):
         cont=0
         for row in body:
             temp=[]
+            ncol=0
             for column in row:
                 temp.append(row[column])
+                ncol=ncol+1
+            if(ncol>3):
+                msj='Se estan enviando mas columnas de las debidas'
+                return Response(status=400,response=msj)   
             val.append(temp)
             cont=cont+1    
         try:
@@ -571,8 +576,13 @@ def addNBO_m(body=None):
         cont=0
         for row in body:
             temp=[]
+            ncol=0
             for column in row:
                 temp.append(row[column])
+                ncol=ncol+1
+            if(ncol>14):
+                msj='Se estan enviando mas columnas de las debidas'
+                return Response(status=400,response=msj)   
             val.append(temp)
             cont=cont+1
 
@@ -581,6 +591,46 @@ def addNBO_m(body=None):
             cursor=conector.cursor()
 
             query="insert into nbo_model(Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Empleados,Activo_fijo,Potencial,Cheques,Etapa,Subetapa,Monto,Producto) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+
+            cursor.execute(query_fix2)
+            cursor.executemany(query,val)
+            conector.commit()
+            cursor.close()
+            cursor.close()
+        except pymysql.Error as e:
+            msj="Error %d: %s" %(e.args[0],e.args[1])
+            print(msj)
+            return Response(status=400,response=msj)
+        else:
+            msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
+            return Response(status=200,response=msj)        
+
+@app.route("/addNBO",methods=['POST'])
+def addNBO(body=None):
+    body=request.get_json()
+    if body==None:
+        msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+        return Response(status=400,response=msj)
+    else:
+        val=[]
+        cont=0
+        for row in body:
+            temp=[]
+            ncol=0
+            for column in row:
+                temp.append(row[column])
+                ncol=ncol+1
+            if(ncol>10):
+                msj='Se estan enviando mas columnas de las debidas '
+                return Response(status=400,response=msj)    
+            val.append(temp)
+            cont=cont+1
+
+        try:
+            conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
+            cursor=conector.cursor()
+
+            query="insert into nbo_in(Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Empleados,Activo_fijo,Potencial,Cheques) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
             cursor.execute(query_fix2)
             cursor.executemany(query,val)
