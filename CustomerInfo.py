@@ -141,17 +141,6 @@ def setCLV(body=None):
         if (check!='OK'):
             return check
 
-    info_db=body['db']      
-
-    global host
-    global db
-    global user_db
-    global pass_db
-
-    host=info_db[0]['host']
-    db=info_db[1]['db']
-    user_db=info_db[2]['user']
-    pass_db=info_db[3]['password']
 
     if 'meanlife' in body:
         meanlife=body['meanlife']
@@ -646,53 +635,15 @@ def checkBodygetCustomerInfo(body):
 def checkBodysetCLV(body):
         c=0
         for i in body:
-            if(i!='db' and i!='meanlife'):
-                msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"db\",\"meanlife\" (opcional)"
+            if(i!='meanlife'):
+                msj= "Key:"+i+" incorrecta,la key puede ser la siguiente:\"meanlife\" (opcional)"
                 return Response(status=400,response=msj)
-            else:
-                c=c+1
-        if(c!=3 and c!=1):
-                msj= "Falta alguna key,las keys deben ser las siguientes:\"db\",opcional(\"meanlife\")"
-                return Response(status=400,response=msj)        
 
         if 'meanlife' in body:
             if(type(body['meanlife'])!=int):
                 msj= "meanlife no es \"entero\",favor de corregir"
                 return Response(status=400,response=msj)    
 
-        c=0
-        for i in body['db']:
-            for key,val in i.items():
-                if(key=='host'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                elif(key=='db'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                elif(key=='user'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                elif(key=='password'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                else:
-                    msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""       
-                    return Response(status=400,response=msj)    
-        if(c!=4):
-            msj= "Falta alguna key,las keys deben ser las siguientes:\"hots\",\"db\",\"user\",\"password\""
-            return Response(status=400,response=msj)
         return 'OK'                                          
 
 def checkBodysetRFM(body):
