@@ -535,9 +535,6 @@ def addRFM(body=None):
         msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
         return Response(status=400,response=msj)
     else:
-
-        conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
-        cursor=conector.cursor()
         val=[]
         cont=0
         for row in body:
@@ -552,7 +549,14 @@ def addRFM(body=None):
             val.append(temp)
             cont=cont+1    
         try:
+            conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
+            cursor=conector.cursor()
+
+            clear_table="truncate table rfm_in;"
+            cursor.execute(clear_table)
+
             query='insert into rfm_in(Id_cliente,Fecha,Monto) values(%s,%s,%s)'
+
             cursor.executemany(query,val)
             conector.commit()
             cursor.close()
@@ -589,6 +593,9 @@ def addNBO_m(body=None):
         try:
             conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
             cursor=conector.cursor()
+
+            clear_table="truncate table nbo_model;"
+            cursor.execute(clear_table)
 
             query="insert into nbo_model(Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Empleados,Activo_fijo,Potencial,Cheques,Etapa,Subetapa,Monto,Producto) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
@@ -629,6 +636,9 @@ def addNBO(body=None):
         try:
             conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
             cursor=conector.cursor()
+
+            clear_table="truncate table nbo_in;"
+            cursor.execute(clear_table)
 
             query="insert into nbo_in(Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Empleados,Activo_fijo,Potencial,Cheques) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
