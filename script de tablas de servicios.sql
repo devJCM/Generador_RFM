@@ -1,7 +1,13 @@
+drop table if exists rmf_in;
+drop table if exists nbo_model;
+drop table if exists nbo_in;
+
 drop table if exists rfm_out;
 drop table if exists clv_out;
 drop table if exists nbo_out;
 drop table if exists acreedor_out;
+
+create database CustomerInfo;
 
 -- rfm_in --
 CREATE TABLE IF NOT EXISTS rfm_in (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
