@@ -230,7 +230,7 @@ def setCLV(body=None):
             return Response(msj,status=200)
         
 @app.route("/setNBO",methods=['GET'])
-def setNBO(body=None):
+def setNBO():
 
     try:
         conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
