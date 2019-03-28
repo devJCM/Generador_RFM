@@ -527,6 +527,37 @@ def getCustomerInfo(body=None):
             msj=json.dumps(Data)
             return Response(msj,status=200)
 
+@app.route("/addRFM",methods=['POST'])
+def addRFM(body=None):
+    body=request.get_json()
+    if body==None:
+        msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+        return Response(status=400,response=msj)
+    else:
+
+        conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
+        cursor=conector.cursor()
+        val=[]
+        cont=0
+        for row in body:
+            temp=[]
+            for column in row:
+                temp.append(row[column])
+            val.append(temp)
+            cont=cont+1    
+        try:
+            query='insert into rfm_in(Id_cliente,Fecha,Monto) values(%s,%s,%s)'
+            cursor.executemany(query,val)
+            conector.commit()
+            cursor.close()
+            conector.close()
+        except pymysql.Error as e:
+            msj='Err0r %d: %s' %(e.args[0],e.args[1])
+            print(msj)
+            return Response(status=400,response=msj)
+        else:
+            msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
+            return Response(msj,status=200)
 
 
 
