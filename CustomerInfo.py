@@ -20,7 +20,7 @@ app = Flask(__name__)
 
 host='localhost'
 db='CustomerInfo'
-user_db=root
+user_db='root'
 pass_db=''
 query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
 
