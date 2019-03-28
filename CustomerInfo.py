@@ -229,28 +229,8 @@ def setCLV(body=None):
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
             return Response(msj,status=200)
         
-@app.route("/setNBO",methods=['POST'])
+@app.route("/setNBO",methods=['GET'])
 def setNBO(body=None):
-    body=request.get_json()
-    if body==None:
-        msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
-        return Response(status=400,response=msj)
-    else:
-        check=checkBodysetCLV(body)
-        if (check!='OK'):
-            return check
-
-    info_db=body['db']      
-
-    global host
-    global db
-    global user_db
-    global pass_db
-
-    host=info_db[0]['host']
-    db=info_db[1]['db']
-    user_db=info_db[2]['user']
-    pass_db=info_db[3]['password']
 
     try:
         conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
