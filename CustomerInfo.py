@@ -23,6 +23,7 @@ db='CustomerInfo'
 user_db='root'
 pass_db=''
 query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
+query_fix2="SET sql_mode = '';"
 
 id_RFM=None
 target_R=None
@@ -559,7 +560,40 @@ def addRFM(body=None):
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
             return Response(msj,status=200)
 
+@app.route("/addNBO_m",methods=['POST'])
+def addNBO_m(body=None):
+    body=request.get_json()
+    if body==None:
+        msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+        return Response(status=400,response=msj)
+    else:
+        val=[]
+        cont=0
+        for row in body:
+            temp=[]
+            for column in row:
+                temp.append(row[column])
+            val.append(temp)
+            cont=cont+1
 
+        try:
+            conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
+            cursor=conector.cursor()
+
+            query="insert into nbo_model(Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Empleados,Activo_fijo,Potencial,Cheques,Etapa,Subetapa,Monto,Producto) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+
+            cursor.execute(query_fix2)
+            cursor.executemany(query,val)
+            conector.commit()
+            cursor.close()
+            cursor.close()
+        except pymysql.Error as e:
+            msj="Error %d: %s" %(e.args[0],e.args[1])
+            print(msj)
+            return Response(status=400,response=msj)
+        else:
+            msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
+            return Response(status=200,response=msj)        
 
 
 
