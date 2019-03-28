@@ -50,18 +50,6 @@ def setRFM(body=None):
 
     segmentos=body['segmentos']
     ponderaciones=body['ponderaciones']
-    info_db=body['db']      
-
-    global host
-    global db
-    global user_db
-    global pass_db
-
-    host=info_db[0]['host']
-    db=info_db[1]['db']
-    user_db=info_db[2]['user']
-    pass_db=info_db[3]['password']
-
 
     try:
         conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
@@ -710,13 +698,13 @@ def checkBodysetCLV(body):
 def checkBodysetRFM(body):
         c=0
         for i in body:
-            if(i!='segmentos' and i!='ponderaciones' and i!='db'):
-                msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+            if(i!='segmentos' and i!='ponderaciones'):
+                msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\""
                 return Response(status=400,response=msj)
             else:
                 c=c+1
-        if(c!=3):
-                msj= "Falta alguna key,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\",\"db\""
+        if(c!=2):
+                msj= "Falta alguna key,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\""
                 return Response(status=400,response=msj)        
 
         for i in body['segmentos']:
@@ -764,39 +752,6 @@ def checkBodysetRFM(body):
             msj= "Falta alguna key,las keys deben ser las siguientes:\"recencia\",\"frecuencia\",\"monto\""
             return Response(status=400,response=msj)    
 
-        c=0
-        for i in body['db']:
-            for key,val in i.items():
-                if(key=='host'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"host\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                elif(key=='db'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"db\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                elif(key=='user'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"user\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                elif(key=='password'):
-                    if(type(val)!=str):
-                        msj= "El dato de \"password\" debe ser \"str\",favor de corregir"
-                        return Response(status=400,response=msj)
-                    else:
-                        c=c+1   
-                else:
-                    msj= "Key:"+key+" incorrecta para \"db\",las keys deben ser las siguientes, en el siguiente orden: \"host\",\"db\",\"user\",\"password\""       
-                    return Response(status=400,response=msj)    
-        if(c!=4):
-            msj= "Falta alguna key,las keys deben ser las siguientes:\"hots\",\"db\",\"user\",\"password\""
-            return Response(status=400,response=msj)
         return 'OK'                     
 
 def setRecencia(first_dataset):
