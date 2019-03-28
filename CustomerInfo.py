@@ -18,10 +18,10 @@ from sklearn.model_selection import train_test_split
 
 app = Flask(__name__)
 
-host=None
-db=None
-user_db=None
-pass_db=None
+host='localhost'
+db='CustomerInfo'
+user_db=root
+pass_db=''
 query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
 
 id_RFM=None
