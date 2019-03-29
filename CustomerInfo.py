@@ -525,7 +525,7 @@ def addRFM(body=None):
             if(body['deltas']==0 | body['deltas']==1):
                 deltas=body['deltas']
             else:
-                msj= 'Solo se permite el valor "1 o "0" en la key "deltas"'
+                msj= 'Solo se permite el valor "1" o "0" en la key "deltas"'
                 return Response(status=400,response=msj)    
         else:
             msj= 'No se envió el parametro "deltas", por lo tanto el proceso se detuvo'
@@ -586,7 +586,7 @@ def addNBO_m(body=None):
             if(body['deltas']==0 | body['deltas']==1):
                 deltas=body['deltas']
             else:
-                msj= 'Solo se permite el valor "1 o "0" en la key "deltas"'
+                msj= 'Solo se permite el valor "1" o "0" en la key "deltas"'
                 return Response(status=400,response=msj)    
         else:
             msj= 'No se envió el parametro "deltas", por lo tanto el proceso se detuvo'
@@ -648,7 +648,7 @@ def addNBO(body=None):
             if(body['deltas']==0 | body['deltas']==1):
                 deltas=body['deltas']
             else:
-                msj= 'Solo se permite el valor "1 o "0" en la key "deltas"'
+                msj= 'Solo se permite el valor "1" o "0" en la key "deltas"'
                 return Response(status=400,response=msj)    
         else:
             msj= 'No se envió el parametro "deltas", por lo tanto el proceso se detuvo'
