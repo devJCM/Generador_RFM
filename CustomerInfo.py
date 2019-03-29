@@ -135,7 +135,7 @@ def setRFM(body=None):
 def setCLV(meanlifein):
     if (meanlifein!=None):
         meanlife=float(meanlifein)
-        print('se recibio promedio de vida')
+        print('se recibio promedio de vida:',meanlife)
     else:
         meanlife=getmeanlife()  
 
