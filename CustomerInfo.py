@@ -131,20 +131,11 @@ def setRFM(body=None):
         return Response(status=200,response=msj)
         #return last_dataset
 
-@app.route("/setCLV",methods=['POST'])
-def setCLV(body=None):
-    body=request.get_json()
-    if body==None:
-        msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
-        return Response(status=400,response=msj)
-    else:
-        check=checkBodysetCLV(body)
-        if (check!='OK'):
-            return check
-
-
-    if 'meanlife' in body:
-        meanlife=body['meanlife']
+@app.route("/setCLV/<meanlifein>",methods=['GET'])
+def setCLV(meanlifein=None):
+    if (meanlifein!=None):
+        meanlife=float(meanlifein)
+        print('se recibio promedio de vida')
     else:
         meanlife=getmeanlife()  
 
@@ -651,20 +642,6 @@ def addNBO(body=None):
             return Response(status=200,response=msj)        
 
 
-
-def checkBodysetCLV(body):
-        c=0
-        for i in body:
-            if(i!='meanlife'):
-                msj= "Key:"+i+" incorrecta,la key puede ser la siguiente:\"meanlife\" (opcional)"
-                return Response(status=400,response=msj)
-
-        if 'meanlife' in body:
-            if(type(body['meanlife'])!=int):
-                msj= "meanlife no es \"entero\",favor de corregir"
-                return Response(status=400,response=msj)    
-
-        return 'OK'                                          
 
 def checkBodysetRFM(body):
         c=0
