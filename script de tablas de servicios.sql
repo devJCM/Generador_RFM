@@ -80,7 +80,8 @@ CREATE TABLE IF NOT EXISTS acreedor_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIM
                                    Id_cliente VARCHAR(125),
                                    Acreedor CHAR(5),
                                    Acreedor_prob double(8,4),
-								   Monto_predict double(28,6)
+								   Monto_predict double(28,6),
+                                   Monto_seg double(28,6)
                                    );
 ---
 select * from rfm_in;
