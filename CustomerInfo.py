@@ -131,8 +131,9 @@ def setRFM(body=None):
         return Response(status=200,response=msj)
         #return last_dataset
 
+@app.route("/setCLV",methods=['GET'])
 @app.route("/setCLV/<meanlifein>",methods=['GET'])
-def setCLV(meanlifein):
+def setCLV(meanlifein=None):
     if (meanlifein!=None):
         meanlife=float(meanlifein)
         print('se recibio promedio de vida:',meanlife)
