@@ -642,26 +642,44 @@ def addNBO(body=None):
         msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
         return Response(status=400,response=msj)
     else:
-        val=[]
-        cont=0
-        for row in body:
-            temp=[]
-            ncol=0
-            for column in row:
-                temp.append(row[column])
-                ncol=ncol+1
-            if(ncol>10):
-                msj='Se estan enviando mas columnas de las debidas '
+        if "deltas" in body:
+            if(body['deltas']==0 | body['deltas']==1):
+                deltas=body['deltas']
+            else:
+                msj= 'Solo se permite el valor "1 o "0" en la key "deltas"'
                 return Response(status=400,response=msj)    
-            val.append(temp)
-            cont=cont+1
+        else:
+            msj= 'No se envió el parametro "deltas", por lo tanto el proceso se detuvo'
+            return Response(status=400,response=msj)
+        if "data" in body:
+            if(len(body['data'])>0):        
+                val=[]
+                cont=0
+                for row in body['data']:
+                    temp=[]
+                    ncol=0
+                    for column in row:
+                        temp.append(row[column])
+                        ncol=ncol+1
+                    if(ncol>10):
+                        msj='Se estan enviando mas columnas de las debidas'
+                        return Response(status=400,response=msj)   
+                    val.append(temp)
+                    cont=cont+1
+            else:
+                msj='El parametro "data" esta vacio, por lo tanto el proceso se detuvo'
+                return Response(status=400,response=msj)         
+        else:
+            msj= 'No se envió el parametro "data", por lo tanto el proceso se detuvo'
+            return Response(status=400,response=msj)
 
         try:
             conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
             cursor=conector.cursor()
 
-            clear_table="truncate table nbo_in;"
-            cursor.execute(clear_table)
+            if(deltas==0):
+                clear_table="truncate table nbo_in;"
+                cursor.execute(clear_table)
 
             query="insert into nbo_in(Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Empleados,Activo_fijo,Potencial,Cheques) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
