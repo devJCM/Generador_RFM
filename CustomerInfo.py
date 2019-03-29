@@ -557,6 +557,7 @@ def addRFM(body=None):
             cursor=conector.cursor()
 
             if(deltas==0):
+                print(se trunco la tabla)
                 clear_table="truncate table rfm_in;"
                 cursor.execute(clear_table)
 
@@ -617,6 +618,7 @@ def addNBO_m(body=None):
             cursor=conector.cursor()
 
             if(deltas==0):
+                print(se trunco la tabla)
                 clear_table="truncate table nbo_model;"
                 cursor.execute(clear_table)
 
@@ -678,6 +680,7 @@ def addNBO(body=None):
             cursor=conector.cursor()
 
             if(deltas==0):
+                print(se trunco la tabla)
                 clear_table="truncate table nbo_in;"
                 cursor.execute(clear_table)
 
