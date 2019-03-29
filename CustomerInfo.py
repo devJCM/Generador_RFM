@@ -441,18 +441,13 @@ def setAcreedor():
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
             return Response(msj,status=200)         
 
-@app.route("/getCustomerInfo",methods=['POST'])
-def getCustomerInfo(body=None):
-    body=request.get_json()
-    if body==None:
-        msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+@app.route("/getCustomerInfo/<id>",methods=['GET'])
+def getCustomerInfo(id=None):
+    if id==None:
+        msj= "Es necesario el Id del cliente que quiere consultar, por lo tanto el proceso se detuvo"
         return Response(status=400,response=msj)
     else:
-        check=checkBodygetCustomerInfo(body)
-        if (check!='OK'):
-            return check
-
-        id_cliente=body['id']
+        id_cliente=id
 
         qrfm="select max(Ejecucion),Recencia_out,Frecuencia_out,Monto_out,Segmento from rfm_out where Id_cliente='%s';" %(id_cliente)
         
@@ -656,23 +651,6 @@ def addNBO(body=None):
             return Response(status=200,response=msj)        
 
 
-
-def checkBodygetCustomerInfo(body):
-        c=0
-        for i in body:
-            if(i!='id'):
-                msj= "Key:"+i+" incorrecta,la key debe ser la siguiente:\"id\""
-                return Response(status=400,response=msj)
-            else:
-                c=c+1
-        if(c!=1):
-                msj= "Falta alguna key,la key debe ser la siguiente:\"id\""
-                return Response(status=400,response=msj)        
-        if(type(body['id'])!=str):
-                msj= "Id no es \"string\",favor de corregir"
-                return Response(status=400,response=msj)    
-        
-        return 'OK'                                         
 
 def checkBodysetCLV(body):
         c=0
