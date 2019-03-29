@@ -551,6 +551,7 @@ def addRFM(body=None):
         else:
             msj= 'No se envió el parametro "data", por lo tanto el proceso se detuvo'
             return Response(status=400,response=msj)
+            
         try:
             conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
             cursor=conector.cursor()
