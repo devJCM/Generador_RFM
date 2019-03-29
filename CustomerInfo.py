@@ -394,7 +394,7 @@ def setAcreedor():
 
         #---------Prediccion
 
-        print('Pronosticando predicciones....')
+        print('Pronosticando acreedores....')
 
         predict_acreedor=model.predict(X_normalized)
 
@@ -404,23 +404,56 @@ def setAcreedor():
         df1['predict_acreedor']=np.where((df1['predict_acreedor']==1),'No','Si')
         df1['acreedor_prob']=probabilidades[:,0]
 
+        #-------Carga del modelo2
 
-        print('Se realizara insert....')
+        filename2 = 'credito1_forest_avar.sav'
+
+        model2 = pickle.load(open(filename2, 'rb'))
+
+        #---------Prediccion2
+
+        print('Pronosticando montos de creditos....')
+
+        Monto_predict=model2.predict(X_normalized)
+
+        df1['Monto_predict']=Monto_predict
 
         conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
         cur=conn.cursor()
 
         cont=0
         val=[]
+
+        query_monto_s="select Segmento,MAX(Monto_in) from rfm_out group by Segmento;"
+        cur.execute(query_monto_s)
+        res=cur.fetchall()
+        montos={}
+        monto_seg=0
+
+        for i in res:
+            montos[i[0]]=float(i[1])
+
+        print('Se armara diccionario de valores....')
+
         for index,row in df1.iterrows():
             #query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
-            val.append((row[headers[0]],row['predict_acreedor'],row['acreedor_prob']))
+            query_seg="select Segmento from rfm_out where Id_cliente='%s';" %(row[headers[0]])
+            cur.execute(query_seg)
+            segmento=str(cur.fetchall()[0][0])
+            print(index,"->",row[headers[0]],"->",segmento)
+            monto_seg=0
+            for i in montos:
+                if(i==segmento):
+                    monto_seg=montos[i]
+
+            val.append((row[headers[0]],row['predict_acreedor'],row['acreedor_prob'],monto_seg,row['Monto_predict']))
             cont=cont+1
 
+        print('Se realizara insert....')
         print('inserts:',cont)
 
         try:
-            query="insert into acreedor_out (Id_cliente,Acreedor,Acreedor_prob) values (%s,%s,%s)"
+            query="insert into acreedor_out (Id_cliente,Acreedor,Acreedor_prob,Monto_seg,Monto_predict) values (%s,%s,%s,%s,%s)"
             cur.executemany(query,val)
             conn.commit()
             cur.close()
