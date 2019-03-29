@@ -132,7 +132,7 @@ def setRFM(body=None):
         #return last_dataset
 
 @app.route("/setCLV/<meanlifein>",methods=['GET'])
-def setCLV(meanlifein=None):
+def setCLV(meanlifein):
     if (meanlifein!=None):
         meanlife=float(meanlifein)
         print('se recibio promedio de vida')
@@ -433,7 +433,7 @@ def setAcreedor():
             return Response(msj,status=200)         
 
 @app.route("/getCustomerInfo/<id>",methods=['GET'])
-def getCustomerInfo(id=None):
+def getCustomerInfo(id):
     if id==None:
         msj= "Es necesario el Id del cliente que quiere consultar, por lo tanto el proceso se detuvo"
         return Response(status=400,response=msj)
@@ -521,25 +521,43 @@ def addRFM(body=None):
         msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
         return Response(status=400,response=msj)
     else:
-        val=[]
-        cont=0
-        for row in body:
-            temp=[]
-            ncol=0
-            for column in row:
-                temp.append(row[column])
-                ncol=ncol+1
-            if(ncol>3):
-                msj='Se estan enviando mas columnas de las debidas'
-                return Response(status=400,response=msj)   
-            val.append(temp)
-            cont=cont+1    
+        if "deltas" in body:
+            if(body['deltas']==0 | body['deltas']==1):
+                deltas=body['deltas']
+            else:
+                msj= 'Solo se permite el valor "1 o "0" en la key "deltas"'
+                return Response(status=400,response=msj)    
+        else:
+            msj= 'No se envió el parametro "deltas", por lo tanto el proceso se detuvo'
+            return Response(status=400,response=msj)
+        if "data" in body:
+            if(len(body['data'])>0):        
+                val=[]
+                cont=0
+                for row in body['data']:
+                    temp=[]
+                    ncol=0
+                    for column in row:
+                        temp.append(row[column])
+                        ncol=ncol+1
+                    if(ncol>3):
+                        msj='Se estan enviando mas columnas de las debidas'
+                        return Response(status=400,response=msj)   
+                    val.append(temp)
+                    cont=cont+1
+            else:
+                msj='El parametro "data" esta vacio, por lo tanto el proceso se detuvo'
+                return Response(status=400,response=msj)         
+        else:
+            msj= 'No se envió el parametro "data", por lo tanto el proceso se detuvo'
+            return Response(status=400,response=msj)
         try:
             conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
             cursor=conector.cursor()
 
-            clear_table="truncate table rfm_in;"
-            cursor.execute(clear_table)
+            if(deltas==0):
+                clear_table="truncate table rfm_in;"
+                cursor.execute(clear_table)
 
             query='insert into rfm_in(Id_cliente,Fecha,Monto) values(%s,%s,%s)'
 
