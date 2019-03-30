@@ -439,12 +439,16 @@ def setAcreedor():
             #query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
             query_seg="select Segmento from rfm_out where Id_cliente='%s';" %(row[headers[0]])
             cur.execute(query_seg)
-            segmento=str(cur.fetchall()[0][0])
-            print(index,"->",row[headers[0]],"->",segmento)
+            res=cur.fetchall()
             monto_seg=0
-            for i in montos:
-                if(i==segmento):
-                    monto_seg=montos[i]
+
+            if(len(res)>0): 
+                segmento=str(res[0][0])
+                for i in montos:
+                    if(i==segmento):
+                        monto_seg=montos[i]
+            else:
+                print(row[headers[0]]," >>>NO TIENE SEGMENTO")
 
             val.append((row[headers[0]],row['predict_acreedor'],row['acreedor_prob'],monto_seg,row['Monto_predict']))
             cont=cont+1
