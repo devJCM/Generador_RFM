@@ -60,14 +60,22 @@
                 <div class="col align-self-center" id="righttside">
                     <h4>Credito</h4>
                     <div class="row">
-                        <div class="col">
+                        <div class="col-lg-3">
                             <label for="Acreedor">Viable para credito</label>
                               <input type="text" id="Acreedor" class="form-control" aria-describedby="basic-addon3" disabled="">
                         </div>    
-                        <div class="col">    
+                        <div class="col-lg-3">    
                             <label for="Acreedor_prob">Nivel de Confianza</label>
                             <input type="text" id="Acreedor_prob" class="form-control" aria-describedby="basic-addon3" disabled>
-                        </div>    
+                        </div>
+                        <div class="col-lg-3">    
+                            <label for="Monto_seg">Monto de credito de Segmento</label>
+                            <input type="text" id="Monto_seg" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>
+                        <div class="col-lg-3">    
+                            <label for="Monto_predict">Monto de credito Individual</label>
+                            <input type="text" id="Monto_predict" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>        
                     </div>
                     <br>
                     <h4>RFM</h4>
@@ -134,13 +142,13 @@
         <script>
 			var id=getGetVariable("id");
 			//var id="377a50ed-a657-db1c-c858-591b269b1e6c";
-			var url='http://'+window.location.host+'/CustomerInfo/getCustomerInfo.php';
-			var post={"id":id,};
+			var url='http://'+window.location.host+'/CustomerInfo/getCustomerInfo.php?id='+id;
+			//var post={"id":id,};
 
 			$.ajax({
-			  type: "POST",
+			  type: "GET",
 			  url: url,
-			  data: post,
+			  //data: post,
 			  dataType:'json',
 			  success:function(data){
 
@@ -216,9 +224,17 @@
 			function fillfields(client_info){
                 var cv=parseFloat(client_info.CLV.CV);
                 var clv=parseFloat(client_info.CLV.CLV);
+                var Monto_seg=parseFloat(client_info.Credito.Monto_seg)
+                var Monto_predict=parseFloat(client_info.Credito.Monto_predict)
 
-                $('#Acreedor').val(client_info.Acreedor);
-                $('#Acreedor_prob').val(client_info.Acreedor_prob+'%');
+                $('#Acreedor').val(client_info.Credito.Acreedor);
+                $('#Acreedor_prob').val(client_info.Credito.Acreedor_prob+'%');
+                $('#Monto_seg').val('$ '+Monto_seg.toFixed(4));
+                $('#Monto_predict').val('$ '+Monto_predict.toFixed(4));
+                if(client_info.Credito.Acreedor=='No'){
+                    $('#Monto_seg').hide();
+                    $('#Monto_predict').hide();
+                }
 				$('#R').val(client_info.RFM.R);
                 $('#F').val(client_info.RFM.F);
                 $('#M').val(client_info.RFM.M);
@@ -226,7 +242,7 @@
                 $('#LifeTime').val(client_info.CLV.LifeTime);
                 $('#CV').val('$ '+cv.toFixed(4));
                 $('#CLV').val('$ '+clv.toFixed(4));
-                $('#Product_Predict').val(client_info.NBO.Product_Predict);
+                $('#Product_Predict').val(client_info.NBO.Producto_Predict);
 
                 var numproductos=Object.keys(client_info.NBO).length-1;
                 for (var i = 1; i <= numproductos; i++) {
