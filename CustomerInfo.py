@@ -482,12 +482,12 @@ def getCustomerInfo(id):
         
         qclv="select max(Ejecucion),Valor_cliente,Vida_cliente,CLV from clv_out where Id_cliente='%s';" %(id_cliente)
 
-        qacreedor="select max(Ejecucion),Acreedor,Acreedor_prob from acreedor_out where Id_cliente='%s';" %(id_cliente)
+        qacreedor="select max(Ejecucion),Acreedor,Acreedor_prob,Monto_predict,Monto_seg from acreedor_out where Id_cliente='%s';" %(id_cliente)
 
         qnbo="select max(Ejecucion),Producto_Predict,Producto_1,Producto_2,Producto_3,Producto_4,Producto_5 from nbo_out where Id_cliente='%s';" %(id_cliente)
 
 
-        Data={'RFM':{},'CLV':{},'NBO':{},'Acreedor':None,'Acreedor_prob':None}
+        Data={'RFM':{},'CLV':{},'NBO':{},'Credito':{}}
 
         limit_values=getlimitvalues()
         Data['limit_values']=limit_values
@@ -514,8 +514,10 @@ def getCustomerInfo(id):
 
             cur.execute(qacreedor)
             res=cur.fetchall()
-            Data['Acreedor']=res[0][1]
-            Data['Acreedor_prob']=res[0][2]
+            Data['Credito']['Acreedor']=res[0][1]
+            Data['Credito']['Acreedor_prob']=res[0][2]
+            Data['Credito']['Monto_predict']=res[0][3]
+            Data['Credito']['Monto_seg']=res[0][4]
 
             cur.execute(qnbo)
             res=cur.fetchall()
