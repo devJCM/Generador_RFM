@@ -515,7 +515,7 @@ def getCustomerInfo(id):
             cur.execute(qacreedor)
             res=cur.fetchall()
             Data['Credito']['Acreedor']=res[0][1]
-            Data['Credito']['Acreedor_prob']=res[0][2]
+            Data['Credito']['Acreedor_prob']=res[0][2]*100
             Data['Credito']['Monto_predict']=res[0][3]
             Data['Credito']['Monto_seg']=res[0][4]
 
@@ -526,7 +526,7 @@ def getCustomerInfo(id):
                 if(idx==0 or idx==1):
                     continue
                 temp='Producto_'+str(idx-1)
-                Data['NBO'][temp]=i    
+                Data['NBO'][temp]=i*100    
             
             #Data['NBO']['Producto_1']=res[0][2]
             #Data['NBO']['Producto_2']=res[0][3]

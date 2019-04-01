@@ -68,12 +68,12 @@
                             <label for="Acreedor_prob">Nivel de Confianza</label>
                             <input type="text" id="Acreedor_prob" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>
-                        <div class="col-lg-3">    
-                            <label for="Monto_seg">Monto de credito de Segmento</label>
+                        <div class="col-lg-3" id="creditlineseg">    
+                            <label for="Monto_seg">Linea de credito de Segmento</label>
                             <input type="text" id="Monto_seg" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>
-                        <div class="col-lg-3">    
-                            <label for="Monto_predict">Monto de credito Individual</label>
+                        <div class="col-lg-3" id="creditlineind">    
+                            <label for="Monto_predict">Linea de credito Individual</label>
                             <input type="text" id="Monto_predict" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>        
                     </div>
@@ -232,8 +232,8 @@
                 $('#Monto_seg').val('$ '+Monto_seg.toFixed(4));
                 $('#Monto_predict').val('$ '+Monto_predict.toFixed(4));
                 if(client_info.Credito.Acreedor=='No'){
-                    $('#Monto_seg').hide();
-                    $('#Monto_predict').hide();
+                    $('#creditlineind').hide();
+                    $('#creditlineseg').hide();
                 }
 				$('#R').val(client_info.RFM.R);
                 $('#F').val(client_info.RFM.F);
