@@ -739,6 +739,106 @@ def addNBO(body=None):
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
             return Response(status=200,response=msj)        
 
+@app.route("/getInfo",methods=['POST'])
+def getInfo(body=None):
+    body=request.get_json()
+
+    query_rfm="select Ejecucion,Id_cliente,Recencia_out,Frecuencia_out,Monto_out,Segmento from rfm_out"
+    query_clv="select Ejecucion,Id_cliente,Valor_cliente,Vida_cliente,CLV from clv_out"
+    query_nbo="select Ejecucion,Id_cliente,Producto_Predict,Producto_1,Producto_2,Producto_3,Producto_4,Producto_5 from nbo_out"
+    query_acreedor="select Ejecucion,Id_cliente,Acreedor,Acreedor_prob,Monto_predict,Monto_seg from acreedor_out"
+
+
+    if body!=None:
+
+        if "id" in body:
+            query_rfm=query_rfm+" where Id_cliente='%s'" %(body['id'])
+            query_clv=query_clv+" where Id_cliente='%s'" %(body['id'])
+            query_nbo=query_nbo+" where Id_cliente='%s'" %(body['id'])
+            query_acreedor=query_acreedor+" where Id_cliente='%s'" %(body['id'])
+
+            if (('date_start' in body) and ('date_end' in body)):
+                query_rfm=query_rfm+" and Ejecucion between '%s' and '%s'" %(body['date_start'],body['date_end'])
+                query_clv=query_clv+" and Ejecucion between '%s' and '%s'" %(body['date_start'],body['date_end'])
+                query_nbo=query_nbo+" and Ejecucion between '%s' and '%s'" %(body['date_start'],body['date_end'])
+                query_acreedor=query_acreedor+" and Ejecucion between '%s' and '%s'" %(body['date_start'],body['date_end'])
+        else:
+            if (('date_start' in body) and ('date_end' in body)):
+                query_rfm=query_rfm+" where Ejecucion between '%s' and '%s'" %(body['date_start'],body['date_end'])
+                query_clv=query_clv+" where Ejecucion between '%s' and '%s'" %(body['date_start'],body['date_end'])
+                query_nbo=query_nbo+" where Ejecucion between '%s' and '%s'" %(body['date_start'],body['date_end'])
+                query_acreedor=query_acreedor+" where Ejecucion between '%s' and '%s'" %(body['date_start'],body['date_end'])
+    
+    try:
+        conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
+        cursor=conector.cursor()
+
+        cursor.execute(query_rfm)
+        res_rfm=cursor.fetchall()
+
+        cursor.execute(query_clv)
+        res_clv=cursor.fetchall()
+
+        cursor.execute(query_nbo)
+        res_nbo=cursor.fetchall()
+
+        cursor.execute(query_acreedor)
+        res_acreedor=cursor.fetchall()
+
+        print('Se realizaron consultas')
+
+    except pymysql.Error as e:
+        msj="Error %d: %s" %(e.args[0],e.args[1])
+        print(msj)
+        return Response(status=400,response=msj)
+    else:
+
+        headers_rfm=['Ejecucion','Id_cliente','Recencia_out','Frecuencia_out','Monto_out','Segmento']
+        headers_clv=['Ejecucion','Id_cliente','Valor_cliente','Vida_cliente','CLV']
+        headers_nbo=['Ejecucion','Id_cliente','Producto_Predict','Producto_1','Producto_2','Producto_3','Producto_4','Producto_5']
+        headers_acreedor=['Ejecucion','Id_cliente','Acreedor','Acreedor_prob','Monto_predict','Monto_seg']
+
+        #-- TIENEN QUE ESTAR EN EL MISMO ORDEN PARA QUE LA ASIGNACION SEA CORRECTA
+
+        Data={'RFM':{},'CLV':{},'NBO':{},'Credito':{}}
+        res=[]
+        headers=[]
+
+        res.append(res_rfm)
+        res.append(res_clv)
+        res.append(res_nbo)
+        res.append(res_acreedor)
+
+        headers.append(headers_rfm)
+        headers.append(headers_clv)
+        headers.append(headers_nbo)
+        headers.append(headers_acreedor)
+
+        #-- TIENEN QUE ESTAR EN EL MISMO ORDEN PARA QUE LA ASIGNACION SEA CORRECTA
+
+        for idx,key in enumerate(Data):
+            filas=0
+
+            for h in headers[idx]:
+                Data[key][h]=[]
+            
+            if(len(res[idx])>0):
+                for r in res[idx]:
+                    filas+=1
+                    for i in range(len(headers[idx])):
+                        Data[key][headers[idx][i]].append(r[i])
+            else:
+                msj= "No hay registros en 'res %s'." %(str(idx))
+                print(msj)
+
+            print('El numero de filas de '+key+' es de:'+str(filas))
+
+        print('Se creó objeto')
+
+        msj=json.dumps(Data,default=str)
+        return Response(msj,status=200)
+
+
 
 
 def checkBodysetRFM(body):
