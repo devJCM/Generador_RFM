@@ -191,7 +191,7 @@ def setCLV(meanlifein=None):
         print('El numero de filas de este dataset es de:'+str(filas))
 
         first_dataset=pd.DataFrame(dataset_dummy)
-        print(first_dataset.dtypes)
+        #print(first_dataset.dtypes)
         
         first_dataset[headers[1]]=first_dataset[headers[1]].astype(float)
         first_dataset[headers[1]]=first_dataset[headers[1]].fillna(0)
@@ -281,6 +281,8 @@ def setNBO():
         X= X.reset_index(drop=True)
         df1=df1.drop(indexes_empties)
         df1= df1.reset_index(drop=True)
+
+        print('Despues de limpieza de vacios:',df1.shape)
 
         X_normalized=normalize_columns(X,['Ventas','Activo_fijo','Potencial'])
         X_normalized=create_dummies(X_normalized,['Macro_sector','Sector','Subsector','Actividad'])
@@ -390,6 +392,8 @@ def setAcreedor():
         X= X.reset_index(drop=True)
         df1=df1.drop(indexes_empties)
         df1= df1.reset_index(drop=True)
+
+        print('Despues de limpieza de vacios:',df1.shape)
 
         X_normalized=normalize_columns(X,['Ventas','Activo_fijo','Potencial'])
         X_normalized=create_dummies(X_normalized,['Macro_sector','Sector','Subsector','Actividad'])
@@ -527,7 +531,8 @@ def getCustomerInfo(id):
             cur.execute(qacreedor)
             res=cur.fetchall()
             Data['Credito']['Acreedor']=res[0][1]
-            Data['Credito']['Acreedor_prob']=res[0][2]*100
+            if(res[0][2]!=None):
+                Data['Credito']['Acreedor_prob']=res[0][2]*100
             Data['Credito']['Monto_predict']=res[0][3]
             Data['Credito']['Monto_seg']=res[0][4]
 
@@ -538,7 +543,8 @@ def getCustomerInfo(id):
                 if(idx==0 or idx==1):
                     continue
                 temp='Producto_'+str(idx-1)
-                Data['NBO'][temp]=i*100    
+                if(i!=None):
+                    Data['NBO'][temp]=i*100    
             
             #Data['NBO']['Producto_1']=res[0][2]
             #Data['NBO']['Producto_2']=res[0][3]
@@ -578,7 +584,6 @@ def addRFM(body=None):
         print(msj)
         return Response(status=400,response=msj)
     else:
-        print('Deltas:',body['deltas'])
         if "deltas" in body:
             if(body['deltas']==0 or body['deltas']==1):
                 deltas=body['deltas']
@@ -650,7 +655,6 @@ def addNBO_m(body=None):
         print(msj)
         return Response(status=400,response=msj)
     else:
-        print('Deltas:',body['deltas'])
         if "deltas" in body:
             if(body['deltas']==0 or body['deltas']==1):
                 deltas=body['deltas']
