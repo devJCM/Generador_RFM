@@ -39,6 +39,7 @@ target_M=None
 def setRFM(body=None):
 
     """API que genera RFM para todas las cuentas"""
+    print('Entro a setRFM')
     body=request.get_json()
     if body==None:
         msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
@@ -134,6 +135,9 @@ def setRFM(body=None):
 @app.route("/setCLV",methods=['GET'])
 @app.route("/setCLV/<meanlifein>",methods=['GET'])
 def setCLV(meanlifein=None):
+
+    print('Entro a setCLV')
+
     if (meanlifein!=None):
         meanlife=float(meanlifein)
         print('se recibio promedio de vida:',meanlife)
@@ -224,6 +228,8 @@ def setCLV(meanlifein=None):
         
 @app.route("/setNBO",methods=['GET'])
 def setNBO():
+
+    print('Entro a setNBO')
 
     try:
         conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
@@ -331,6 +337,8 @@ def setNBO():
 
 @app.route("/setAcreedor",methods=['GET'])
 def setAcreedor():
+
+    print('Entro a setAcreedor')
 
     try:
         conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
@@ -472,8 +480,12 @@ def setAcreedor():
 
 @app.route("/getCustomerInfo/<id>",methods=['GET'])
 def getCustomerInfo(id):
+
+    print('Entro a getCustomerInfo')
+
     if id==None:
         msj= "Es necesario el Id del cliente que quiere consultar, por lo tanto el proceso se detuvo"
+        print(msj)
         return Response(status=400,response=msj)
     else:
         id_cliente=id
@@ -556,19 +568,27 @@ def getCustomerInfo(id):
 
 @app.route("/addRFM",methods=['POST'])
 def addRFM(body=None):
+
+    print('Entro a addRFM')
+
     body=request.get_json()
+
     if body==None:
         msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+        print(msj)
         return Response(status=400,response=msj)
     else:
+        print('Deltas:',body['deltas'])
         if "deltas" in body:
             if(body['deltas']==0 or body['deltas']==1):
                 deltas=body['deltas']
             else:
                 msj= 'Solo se permite el valor 1 o 0 en la key "deltas"'
+                print(msj)
                 return Response(status=400,response=msj)    
         else:
             msj= 'No se envió el parametro "deltas", por lo tanto el proceso se detuvo'
+            print(msj)
             return Response(status=400,response=msj)
         if "data" in body:
             if(len(body['data'])>0):        
@@ -587,9 +607,11 @@ def addRFM(body=None):
                     cont=cont+1
             else:
                 msj='El parametro "data" esta vacio, por lo tanto el proceso se detuvo'
+                print(msj)
                 return Response(status=400,response=msj)         
         else:
             msj= 'No se envió el parametro "data", por lo tanto el proceso se detuvo'
+            print(msj)
             return Response(status=400,response=msj)
 
         try:
@@ -613,23 +635,32 @@ def addRFM(body=None):
             return Response(status=400,response=msj)
         else:
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
+            print(msj)
             return Response(msj,status=200)
 
 @app.route("/addNBO_m",methods=['POST'])
 def addNBO_m(body=None):
+
+    print('Entro a addNBO_m')
+
     body=request.get_json()
+
     if body==None:
         msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+        print(msj)
         return Response(status=400,response=msj)
     else:
+        print('Deltas:',body['deltas'])
         if "deltas" in body:
             if(body['deltas']==0 or body['deltas']==1):
                 deltas=body['deltas']
             else:
                 msj= 'Solo se permite el valor 1 o 0 en la key "deltas"'
+                print(msj)
                 return Response(status=400,response=msj)    
         else:
             msj= 'No se envió el parametro "deltas", por lo tanto el proceso se detuvo'
+            print(msj)
             return Response(status=400,response=msj)
         if "data" in body:
             if(len(body['data'])>0):        
@@ -643,14 +674,17 @@ def addNBO_m(body=None):
                         ncol=ncol+1
                     if(ncol>14):
                         msj='Se estan enviando mas columnas de las debidas'
+                        print(msj)
                         return Response(status=400,response=msj)   
                     val.append(temp)
                     cont=cont+1
             else:
                 msj='El parametro "data" esta vacio, por lo tanto el proceso se detuvo'
+                print(msj)
                 return Response(status=400,response=msj)         
         else:
             msj= 'No se envió el parametro "data", por lo tanto el proceso se detuvo'
+            print(msj)
             return Response(status=400,response=msj)
 
         try:
@@ -675,11 +709,16 @@ def addNBO_m(body=None):
             return Response(status=400,response=msj)
         else:
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
+            print(msj)
             return Response(status=200,response=msj)        
 
 @app.route("/addNBO",methods=['POST'])
 def addNBO(body=None):
+
+    print('Entro a addNBO')
+
     body=request.get_json()
+
     if body==None:
         msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
         return Response(status=400,response=msj)
@@ -737,10 +776,14 @@ def addNBO(body=None):
             return Response(status=400,response=msj)
         else:
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
+            print(msj)
             return Response(status=200,response=msj)        
 
 @app.route("/getInfo",methods=['POST'])
 def getInfo(body=None):
+
+    print('Entro a getInfo')
+
     body=request.get_json()
 
     query_rfm="select Ejecucion,Id_cliente,Recencia_out,Frecuencia_out,Monto_out,Segmento from rfm_out"
@@ -846,11 +889,13 @@ def checkBodysetRFM(body):
         for i in body:
             if(i!='segmentos' and i!='ponderaciones'):
                 msj= "Key:"+i+" incorrecta,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\""
+                print(msj)
                 return Response(status=400,response=msj)
             else:
                 c=c+1
         if(c!=2):
                 msj= "Falta alguna key,las keys deben ser las siguientes:\"segmentos\",\"ponderaciones\""
+                print(msj)
                 return Response(status=400,response=msj)        
 
         for i in body['segmentos']:
@@ -858,9 +903,11 @@ def checkBodysetRFM(body):
                 if(key=='nombre'):
                     if(type(val)!=str):
                         msj= "Uno de los datos de \"Segmentos\" no es \"string\",favor de corregir"
+                        print(msj)
                         return Response(status=400,response=msj)
                 else:
                     msj= "Key:"+key+" incorrecta en  \"segmentos\",debe ser Key:\"nombre\""
+                    print(msj)
                     return Response(status=400,response=msj)
 
         total=0
@@ -870,6 +917,7 @@ def checkBodysetRFM(body):
                 if(key=='recencia'):
                     if(type(val)!=int):
                         msj= "El dato de \"recencia\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+                        print(msj)
                         return Response(status=400,response=msj)
                     else:
                         c=c+1
@@ -877,6 +925,7 @@ def checkBodysetRFM(body):
                 elif(key=='frecuencia'):
                     if(type(val)!=int):
                         msj= "El dato de \"frecuencia\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+                        print(msj)
                         return Response(status=400,response=msj)
                     else:
                         c=c+1
@@ -884,18 +933,22 @@ def checkBodysetRFM(body):
                 elif(key=='monto'):
                     if(type(val)!=int):
                         msj= "El dato de \"monto\" debe ser \"int\" para que la sumatoria de recencia+frecuencia+monto=100,favor de corregir"
+                        print(msj)
                         return Response(status=400,response=msj)
                     else:
                         c=c+1
                         total=total+val 
                 else:
                     msj= "Key:"+key+" incorrecta para \"ponderaciones\",las keys deben ser las siguientes, en el siguiente orden: \"recencia\",\"frecuencia\",\"monto\""
+                    print(msj)
                     return Response(status=400,response=msj)
         if ((total>100) | (total<100)):
             msj= "La suma de las ponderaciones recencia+frecuencia+monto deber ser 100, no "+str(total)+", favor de corregir"
+            print(msj)
             return Response(status=400,response=msj)
         if(c!=3):
             msj= "Falta alguna key,las keys deben ser las siguientes:\"recencia\",\"frecuencia\",\"monto\""
+            print(msj)
             return Response(status=400,response=msj)    
 
         return 'OK'                     

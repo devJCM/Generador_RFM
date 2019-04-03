@@ -31,13 +31,18 @@
             //$statement->execute();
             $statement=$conexion->prepare($query_rfm);
             $statement->execute();
+            $cont=0;
             while($renglon=$statement->fetch(PDO::FETCH_ASSOC)){
                 $arr[]=$renglon; 
+                $cont+=1;
             }
 
             $obj = new  stdClass;
             $obj->deltas=0;
             $obj->data=$arr;
+
+            echo "Cantidad de registros:".$cont."\n";
+            //var_dump($obj);
 
             $url = 'http://localhost:5000/addRFM';
              
@@ -86,20 +91,25 @@
             //$statement->execute();
             $statement=$conexion->prepare($query_nbo_m);
             $statement->execute();
+            $cont=0;
             while ($row=$statement->fetch(PDO::FETCH_ASSOC)) {
                 $arr[]=$row;
+                $cont+=1;
             }
 
             $obj = new  stdClass;
             $obj->deltas=0;
             $obj->data=$arr;
 
+            echo "Cantidad de registros:".$cont."\n";
+            //var_dump($obj);
+
             $url = 'http://localhost:5000/addNBO_m';
              
             //inicializamos el objeto CUrl
             $ch = curl_init($url);
 
-            $jsonDataEncoded = json_encode($arr);
+            $jsonDataEncoded = json_encode($obj);
              
             //Indicamos que nuestra petición sera Post
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -140,20 +150,25 @@
             //$statement->execute();
             $statement=$conexion->prepare($query_nbo_m);
             $statement->execute();
+            $cont=0;
             while ($row=$statement->fetch(PDO::FETCH_ASSOC)) {
                 $arr[]=$row;
+                $cont+=1;
             }
 
             $obj = new  stdClass;
             $obj->deltas=0;
             $obj->data=$arr;
 
+            echo "Cantidad de registros:".$cont."\n";
+            //var_dump($obj);
+
             $url = 'http://localhost:5000/addNBO';
              
             //inicializamos el objeto CUrl
             $ch = curl_init($url);
 
-            $jsonDataEncoded = json_encode($arr);
+            $jsonDataEncoded = json_encode($obj);
              
             //Indicamos que nuestra petición sera Post
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -182,9 +197,9 @@
     }   
 
     $x=new Funciones();
-    //$y=$x->sendRFM();
-    //$y=$x->sendNBO_m();
     $y=$x->sendRFM();
+    //$y=$x->sendNBO_m();
+    //$y=$x->sendNBO();
 
     //echo json_encode($y);
     echo $y;
