@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS rfm_in (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KE
 								   Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                    Id_cliente VARCHAR(125),
                                    Fecha datetime,
+                                   Vigencia datetime,
                                    Monto double(28,6));
 --   
 -- rfm_out --
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS clv_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY K
 -- nbo_model y nbo_in --
 SET sql_mode = '';
 CREATE TABLE IF NOT EXISTS nbo_model (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+								   Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                    Id_cliente VARCHAR(125),
                                    Macro_sector CHAR(5),
                                    Sector char(12),
@@ -122,8 +124,8 @@ SELECT TIMESTAMPDIFF(MONTH,(select MAX(Fecha) FROM rfm_in WHERE Id_cliente='e45d
 SELECT Id_cliente,max(Fecha) as 'Recencia',count(Monto) as 'Frecuencia',AVG(Monto) as 'Monto' FROM rfm_in group by Id_cliente;
 --
 -- llenar datos de rfm_in
-insert into rfm_in(Id_cliente,Fecha,Monto)
-SELECT a.id,op.date_entered,op2.monto_c FROM accounts a, opportunities op,opportunities_cstm op2,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op2.id_c=ao.opportunity_id and op.deleted=0;                                   
+insert into rfm_in(Id_cliente,Fecha,Vigencia,Monto)
+SELECT a.id,op.date_entered,op2.vigencialinea_c,op2.monto_c FROM accounts a, opportunities op,opportunities_cstm op2,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op2.id_c=ao.opportunity_id and op.deleted=0;                                   
 --
 
 -- llenar datos de nbo_model

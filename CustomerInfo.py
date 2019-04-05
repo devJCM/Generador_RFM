@@ -605,7 +605,7 @@ def addRFM(body=None):
                     for column in row:
                         temp.append(row[column])
                         ncol=ncol+1
-                    if(ncol>3):
+                    if(ncol>4):
                         msj='Se estan enviando mas columnas de las debidas'
                         return Response(status=400,response=msj)   
                     val.append(temp)
@@ -623,12 +623,14 @@ def addRFM(body=None):
             conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
             cursor=conector.cursor()
 
+            cursor.execute(query_fix2)
+
             if(deltas==0):
                 print('se trunco la tabla')
                 clear_table="truncate table rfm_in;"
                 cursor.execute(clear_table)
 
-            query='insert into rfm_in(Id_cliente,Fecha,Monto) values(%s,%s,%s)'
+            query='insert into rfm_in(Id_cliente,Fecha,Vigencia,Monto) values(%s,%s,%s,%s)'
 
             cursor.executemany(query,val)
             conector.commit()

@@ -25,7 +25,7 @@
 
             $query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));";
 
-            $query_rfm='SELECT a.id,op.date_entered,op2.monto_c FROM accounts a, opportunities op,opportunities_cstm op2,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op2.id_c=ao.opportunity_id and op.deleted=0;';
+            $query_rfm='SELECT a.id,op.date_entered,vigencialinea_c,op2.monto_c FROM accounts a, opportunities op,opportunities_cstm op2,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op2.id_c=ao.opportunity_id and op.deleted=0;';
 
             //$statement=$conexion->prepare($query_fix);
             //$statement->execute();
