@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import pickle
 
+from datetime import datetime
 from sklearn.preprocessing import MinMaxScaler
 from flask import Flask,Response,request
 from sklearn.cluster import KMeans
@@ -890,7 +891,7 @@ def getInfo(body=None):
 @app.route("/setschedule",methods=['GET'])
 def setschedule():
 
-    print('Entro a setAgenda')
+    print('Entro a setschedule')
 
     try:
         conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
@@ -995,6 +996,111 @@ def setschedule():
         else:
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
             return Response(msj,status=200)
+
+@app.route("/getschedule/<producto>",methods=['GET'])
+def getschedule(producto):
+
+    print('Entro a getschedule')
+
+    if producto==None:
+        msj= "Es necesario el Numero del promotor, por lo tanto el proceso se detuvo"
+        print(msj)
+        return Response(status=400,response=msj)
+    else:
+
+        print('>>Producto:',producto)
+        #today = datetime.now()
+        #datem = datetime.today().strftime("%Y-%m")
+        #datem = datetime.strptime(datem, "%Y-%m")
+
+        try:
+            conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+            cur=conn.cursor()
+
+            #----Modify-----
+            query_extract="SELECT max(Ejecucion),Id_cliente,Nombre,Date_predict,Vigencia,Last_call FROM schedule_out WHERE MONTH(Date_predict) = MONTH(CURRENT_DATE()) and Vigencia < CURDATE() AND (SELECT TIMESTAMPDIFF(DAY,Last_call,CURRENT_DATE()))>15 group by Id_cliente;"
+            
+            #AND YEAR(Date_predict) = YEAR(CURRENT_DATE());
+
+            query_nbo="select max(Ejecucion),Id_cliente,Producto_Predict from nbo_out group by Id_cliente;"
+            #----Modify-----
+            
+            cur.execute(query_fix)
+
+            cur.execute(query_extract)
+
+            res = cur.fetchall()
+
+            cur.execute(query_nbo)
+
+            res2 = cur.fetchall()
+
+            cur.close()
+
+            conn.close()
+
+        except pymysql.Error as e:
+            msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+            print(msj)
+            return Response(status=400,response=msj)
+        else:
+            headers=['id','Nombre','Date_predict','Vigencia','Last_call']
+            dataset_dummy={}
+            filas=0
+
+            for h in headers:
+                dataset_dummy[h]=[]
+
+            if(len(res)>0):
+                for r in res:
+                    filas+=1
+                    for i in range(1,len(headers)+1):
+                        dataset_dummy[headers[i-1]].append(r[i])
+
+            print('El numero de filas de este dataset es de:'+str(filas))
+
+            df1=pd.DataFrame(dataset_dummy)
+
+            print('df1:',df1.shape)
+
+            headers2=['id','Producto_Predict']
+            dataset_dummy2={}
+            filas=0
+
+            for h in headers2:
+                dataset_dummy2[h]=[]
+
+            if(len(res2)>0):
+                for r in res2:
+                    filas+=1
+                    for i in range(1,len(headers2)+1):
+                        dataset_dummy2[headers2[i-1]].append(r[i])
+
+            print('El numero de filas de este dataset2 es de:'+str(filas))
+
+            df2=pd.DataFrame(dataset_dummy2)
+
+            print('df2:',df2.shape)
+
+            df3=df1.merge(df2,how='left',on=['id'])
+
+            print('df3:',df3.shape)
+
+            df4=df3[df3['Producto_Predict']==int(producto)]
+
+            print('df4:',df4.shape)
+
+            df5=df4.drop(['Vigencia', 'Last_call'], axis=1)
+
+            print('df5:',df5.shape)
+            print(df5.head())
+
+            msj=df5.to_json(orient='records',date_format='iso')
+            #msj=json.dumps(df4,default=str)
+            return Response(msj,status=200)
+
+
 
 
 
