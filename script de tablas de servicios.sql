@@ -86,6 +86,15 @@ CREATE TABLE IF NOT EXISTS acreedor_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIM
                                    Monto_seg double(28,6)
                                    );
 ---
+-- agenda_out --
+CREATE TABLE IF NOT EXISTS schedule_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                   Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                   Id_cliente VARCHAR(125),
+                                   Date_predict DATETIME,
+                                   Vigencia DATETIME,
+                                   Contactatado int(2)
+                                   );
+---
 select * from rfm_in;
 select * from rfm_out;
 select * from clv_out;
@@ -93,6 +102,7 @@ select * from nbo_model;
 select * from nbo_in;
 select * from nbo_out;
 select * from acreedor_out;
+select * from schedule_out;
 --
 -- selects getcustomerinfo
 select max(Recencia_out) from rfm_out;

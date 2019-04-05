@@ -887,6 +887,111 @@ def getInfo(body=None):
         msj=json.dumps(Data,default=str)
         return Response(msj,status=200)
 
+@app.route("/setschedule",methods=['GET'])
+def setschedule():
+
+    print('Entro a setAgenda')
+
+    try:
+        conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+        cur=conn.cursor()
+
+        #----Modify-----
+        query_extract="select Id_cliente,max(Fecha),max(Vigencia) from rfm_in group by Id_cliente;"
+        #----Modify-----
+        
+        cur.execute(query_fix)
+        cur.execute(query_extract)
+
+        res = cur.fetchall()
+
+        cur.close()
+
+        conn.close()
+
+    except pymysql.Error as e:
+        msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+        print(msj)
+        return Response(status=400,response=msj)
+    else:
+        headers=['id','Fecha','Vigencia']
+        dataset_dummy={}
+        filas=0
+
+        for h in headers:
+            dataset_dummy[h]=[]
+
+        if(len(res)>0):
+            for r in res:
+                filas+=1
+                for i in range(len(headers)):
+                    dataset_dummy[headers[i]].append(r[i])
+
+        print('El numero de filas de este dataset es de:'+str(filas))
+
+        df1=pd.DataFrame(dataset_dummy)
+
+        #-------Analisis de Datos--------------
+
+        df1['ts'] = df1.Fecha.values.astype(np.int64) // 10 ** 9
+        X=df1[['ts']]
+
+        indexes_empties=X[pd.isnull(X).any(axis=1)].index.tolist()
+
+        X=X.dropna(axis=0,how="any")
+        X= X.reset_index(drop=True)
+        df1=df1.drop(indexes_empties)
+        df1= df1.reset_index(drop=True)
+
+        #-------Carga del modelo
+
+        filename = 'agenda1_knn_1var.sav'
+
+        model = pickle.load(open(filename, 'rb'))
+
+        #---------Prediccion
+
+        print('Pronosticando Fechas....')
+
+        predict_fecha=model.predict(X)
+
+        df1['predict_fecha']=predict_fecha
+
+        df1['predict_fecha']=pd.to_datetime(df1['predict_fecha'], unit='s')
+
+        #print(df1.head())
+
+        print('Se realizara insert')
+
+        conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+        cur=conn.cursor()
+
+        cur.execute(query_fix2)
+
+        cont=0
+        val=[]
+        for index,row in df1.iterrows():
+            #query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
+            val.append((row[headers[0]],row['predict_fecha'].to_pydatetime(),row['Vigencia']))
+            cont=cont+1
+
+        print('inserts:',cont)
+
+        try:
+            query="insert into schedule_out (Id_cliente,Date_predict,Vigencia) values (%s,%s,%s)"
+            cur.executemany(query,val)
+            conn.commit()
+            cur.close()
+            conn.close()
+        except pymysql.Error as e:
+            msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+            print(msj)
+            return Response(status=400,response=msj)            
+        else:
+            msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
+            return Response(msj,status=200)
+
 
 
 
