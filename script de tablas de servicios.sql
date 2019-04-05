@@ -138,8 +138,10 @@ SELECT TIMESTAMPDIFF(MONTH,(select MAX(Fecha) FROM rfm_in WHERE Id_cliente='e45d
 SELECT Id_cliente,max(Fecha) as 'Recencia',count(Monto) as 'Frecuencia',AVG(Monto) as 'Monto' FROM rfm_in group by Id_cliente;
 --
 -- llenar datos de rfm_in
-insert into rfm_in(Id_cliente,Fecha,Vigencia,Monto)
-SELECT a.id,op.date_entered,op2.vigencialinea_c,op2.monto_c FROM accounts a, opportunities op,opportunities_cstm op2,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op2.id_c=ao.opportunity_id and op.deleted=0;                                   
+insert into rfm_in(Id_cliente,Nombre,Fecha,Vigencia,Last_call,Monto)
+SELECT a.id,a.name,op.date_entered,vigencialinea_c,(select max(calls.date_end) from calls where calls.parent_id=a.id and calls.status='Held'),op2.monto_c
+FROM accounts a, opportunities op,opportunities_cstm op2,accounts_opportunities ao
+WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op2.id_c=ao.opportunity_id and op.deleted=0; 
 --
 
 -- llenar datos de nbo_model

@@ -22,8 +22,8 @@ host='localhost'
 db='CustomerInfo'
 user_db='root'
 pass_db=''
-query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
-query_fix2="SET sql_mode = '';"
+query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));" #para permitir group by sin declararlos
+query_fix2="SET sql_mode = '';" #para permitir agregar nulos en fechas
 
 id_RFM=None
 target_R=None
@@ -240,7 +240,7 @@ def setNBO():
         query_extract="SELECT Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Activo_fijo,Potencial,Cheques from nbo_in;"
         #----Modify-----
         
-        cur.execute(query_fix)
+        #cur.execute(query_fix)
         cur.execute(query_extract)
 
         res = cur.fetchall()
@@ -351,7 +351,7 @@ def setAcreedor():
         query_extract="SELECT Id_cliente,Macro_sector,Sector,Subsector,Actividad,Ventas,Activo_fijo,Potencial,Cheques from nbo_in;"
         #----Modify-----
         
-        cur.execute(query_fix)
+        #cur.execute(query_fix)
         cur.execute(query_extract)
 
         res = cur.fetchall()
@@ -605,7 +605,7 @@ def addRFM(body=None):
                     for column in row:
                         temp.append(row[column])
                         ncol=ncol+1
-                    if(ncol>5):
+                    if(ncol>6):
                         msj='Se estan enviando mas columnas de las debidas'
                         return Response(status=400,response=msj)   
                     val.append(temp)
@@ -630,7 +630,7 @@ def addRFM(body=None):
                 clear_table="truncate table rfm_in;"
                 cursor.execute(clear_table)
 
-            query='insert into rfm_in(Id_cliente,Nombre,Fecha,Vigencia,Monto) values(%s,%s,%s,%s,%s)'
+            query='insert into rfm_in(Id_cliente,Nombre,Fecha,Vigencia,Last_call,Monto) values(%s,%s,%s,%s,%s,%s)'
 
             cursor.executemany(query,val)
             conector.commit()
