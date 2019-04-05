@@ -898,7 +898,7 @@ def setschedule():
         cur=conn.cursor()
 
         #----Modify-----
-        query_extract="select Id_cliente,Nombre,max(Fecha),max(Vigencia) from rfm_in group by Id_cliente;"
+        query_extract="select Id_cliente,Nombre,max(Fecha),max(Vigencia),max(Last_call) from rfm_in group by Id_cliente;"
         #----Modify-----
         
         cur.execute(query_fix)
@@ -915,7 +915,7 @@ def setschedule():
         print(msj)
         return Response(status=400,response=msj)
     else:
-        headers=['id','Nombre','Fecha','Vigencia']
+        headers=['id','Nombre','Fecha','Vigencia','Last_call']
         dataset_dummy={}
         filas=0
 
@@ -943,6 +943,10 @@ def setschedule():
         X= X.reset_index(drop=True)
         df1=df1.drop(indexes_empties)
         df1= df1.reset_index(drop=True)
+
+        df1[headers[4]]=df1[headers[4]].fillna(pd.to_datetime(0, unit='s'))
+
+        #print(df1.dtypes)
 
         #-------Carga del modelo
 
@@ -973,13 +977,13 @@ def setschedule():
         val=[]
         for index,row in df1.iterrows():
             #query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
-            val.append((row[headers[0]],row[headers[1]],row['predict_fecha'].to_pydatetime(),row[headers[3]]))
+            val.append((row[headers[0]],row[headers[1]],row['predict_fecha'].to_pydatetime(),row[headers[3]],row[headers[4]].to_pydatetime()))
             cont=cont+1
 
         print('inserts:',cont)
 
         try:
-            query="insert into schedule_out (Id_cliente,Date_predict,Vigencia) values (%s,%s,%s)"
+            query="insert into schedule_out (Id_cliente,Nombre,Date_predict,Vigencia,Last_call) values (%s,%s,%s,%s,%s)"
             cur.executemany(query,val)
             conn.commit()
             cur.close()
