@@ -605,7 +605,7 @@ def addRFM(body=None):
                     for column in row:
                         temp.append(row[column])
                         ncol=ncol+1
-                    if(ncol>4):
+                    if(ncol>5):
                         msj='Se estan enviando mas columnas de las debidas'
                         return Response(status=400,response=msj)   
                     val.append(temp)
@@ -630,7 +630,7 @@ def addRFM(body=None):
                 clear_table="truncate table rfm_in;"
                 cursor.execute(clear_table)
 
-            query='insert into rfm_in(Id_cliente,Fecha,Vigencia,Monto) values(%s,%s,%s,%s)'
+            query='insert into rfm_in(Id_cliente,Nombre,Fecha,Vigencia,Monto) values(%s,%s,%s,%s,%s)'
 
             cursor.executemany(query,val)
             conector.commit()
@@ -898,7 +898,7 @@ def setschedule():
         cur=conn.cursor()
 
         #----Modify-----
-        query_extract="select Id_cliente,max(Fecha),max(Vigencia) from rfm_in group by Id_cliente;"
+        query_extract="select Id_cliente,Nombre,max(Fecha),max(Vigencia) from rfm_in group by Id_cliente;"
         #----Modify-----
         
         cur.execute(query_fix)
@@ -915,7 +915,7 @@ def setschedule():
         print(msj)
         return Response(status=400,response=msj)
     else:
-        headers=['id','Fecha','Vigencia']
+        headers=['id','Nombre','Fecha','Vigencia']
         dataset_dummy={}
         filas=0
 
@@ -973,7 +973,7 @@ def setschedule():
         val=[]
         for index,row in df1.iterrows():
             #query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
-            val.append((row[headers[0]],row['predict_fecha'].to_pydatetime(),row['Vigencia']))
+            val.append((row[headers[0]],row[headers[1]],row['predict_fecha'].to_pydatetime(),row[headers[3]]))
             cont=cont+1
 
         print('inserts:',cont)

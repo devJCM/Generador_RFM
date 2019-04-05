@@ -14,8 +14,10 @@ use CustomerInfo;
 CREATE TABLE IF NOT EXISTS rfm_in (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 								   Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                    Id_cliente VARCHAR(125),
+                                   Nombre VARCHAR(125),
                                    Fecha datetime,
                                    Vigencia datetime,
+                                   Last_call datetime,
                                    Monto double(28,6));
 --   
 -- rfm_out --
@@ -90,8 +92,10 @@ CREATE TABLE IF NOT EXISTS acreedor_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIM
 CREATE TABLE IF NOT EXISTS schedule_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
                                    Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                    Id_cliente VARCHAR(125),
+                                   Nombre VARCHAR(125),
                                    Date_predict DATETIME,
                                    Vigencia DATETIME,
+                                   Last_call datetime,
                                    Contactatado int(2)
                                    );
 ---
