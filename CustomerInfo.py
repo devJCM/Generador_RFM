@@ -888,10 +888,10 @@ def getInfo(body=None):
         msj=json.dumps(Data,default=str)
         return Response(msj,status=200)
 
-@app.route("/setschedule",methods=['GET'])
-def setschedule():
+@app.route("/setscheduler",methods=['GET'])
+def setscheduler():
 
-    print('Entro a setschedule')
+    print('Entro a setscheduler')
 
     try:
         conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
@@ -984,7 +984,7 @@ def setschedule():
         print('inserts:',cont)
 
         try:
-            query="insert into schedule_out (Id_cliente,Nombre,Date_predict,Vigencia,Last_call) values (%s,%s,%s,%s,%s)"
+            query="insert into scheduler_out (Id_cliente,Nombre,Date_predict,Vigencia,Last_call) values (%s,%s,%s,%s,%s)"
             cur.executemany(query,val)
             conn.commit()
             cur.close()
@@ -997,10 +997,10 @@ def setschedule():
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
             return Response(msj,status=200)
 
-@app.route("/getschedule/<producto>",methods=['GET'])
+@app.route("/getscheduler/<producto>",methods=['GET'])
 def getschedule(producto):
 
-    print('Entro a getschedule')
+    print('Entro a getscheduler')
 
     if producto==None:
         msj= "Es necesario el Numero del promotor, por lo tanto el proceso se detuvo"
@@ -1019,7 +1019,7 @@ def getschedule(producto):
             cur=conn.cursor()
 
             #----Modify-----
-            query_extract="SELECT max(Ejecucion),Id_cliente,Nombre,Date_predict,Vigencia,Last_call FROM schedule_out WHERE MONTH(Date_predict) = MONTH(CURRENT_DATE()) and Vigencia < CURDATE() AND (SELECT TIMESTAMPDIFF(DAY,Last_call,CURRENT_DATE()))>15 group by Id_cliente;"
+            query_extract="SELECT max(Ejecucion),Id_cliente,Nombre,Date_predict,Vigencia,Last_call FROM scheduler_out WHERE MONTH(Date_predict) = MONTH(CURRENT_DATE()) and Vigencia < CURDATE() AND (SELECT TIMESTAMPDIFF(DAY,Last_call,CURRENT_DATE()))>15 group by Id_cliente;"
             
             #AND YEAR(Date_predict) = YEAR(CURRENT_DATE());
 
@@ -1094,7 +1094,7 @@ def getschedule(producto):
             df5=df4.drop(['Vigencia', 'Last_call'], axis=1)
 
             print('df5:',df5.shape)
-            print(df5.head())
+            #print(df5.head())
 
             msj=df5.to_json(orient='records',date_format='iso')
             #msj=json.dumps(df4,default=str)

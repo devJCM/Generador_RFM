@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS acreedor_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIM
                                    );
 ---
 -- agenda_out --
-CREATE TABLE IF NOT EXISTS schedule_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS scheduler_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
                                    Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                    Id_cliente VARCHAR(125),
                                    Nombre VARCHAR(125),
@@ -151,3 +151,6 @@ select a.id_c,a.tct_macro_sector_ddw_c,a.sectoreconomico_c,a.subsectoreconomico_
 		a.empleados_c,a.activo_fijo_c,a.potencial_cuenta_c,a.tct_prom_cheques_cur_c,
         op.tct_etapa_ddw_c,op.estatus_c,op.monto_c,op.tipo_producto_c
 FROM accounts_cstm a, opportunities_cstm op,accounts_opportunities ao WHERE a.id_c=ao.account_id AND op.id_c=ao.opportunity_id;
+
+-- conocer numero de oportunidades por cuenta
+select Frecuencia_in as 'Numero de Oportunidades',count(*) as 'Numero de Cuentas' from rfm_out group by Frecuencia_in; -- Frecuencia,Cuentas con esa frecuencia
