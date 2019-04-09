@@ -580,11 +580,16 @@ def getCustomerInfo(id):
             print(msj)
             return Response(status=400,response=msj)
         else:
-            Data['RFM']['R_n']=(Data['RFM']['R']-limit_values['rmin'])/(limit_values['rmax']-limit_values['rmin'])
-            Data['RFM']['F_n']=(Data['RFM']['F']-limit_values['fmin'])/(limit_values['fmax']-limit_values['fmin'])
-            Data['RFM']['M_n']=(Data['RFM']['M']-limit_values['mmin'])/(limit_values['mmax']-limit_values['mmin'])
-            Data['CLV']['CV_n']=(Data['CLV']['CV']-limit_values['cvmin'])/(limit_values['cvmax']-limit_values['cvmin'])
-            Data['CLV']['CLV_n']=(Data['CLV']['CLV']-limit_values['clvmin'])/(limit_values['clvmax']-limit_values['clvmin'])
+            if(Data['RFM']['R']!=None and limit_values['rmin']!=None and limit_values['rmax']!=None):
+                Data['RFM']['R_n']=(Data['RFM']['R']-limit_values['rmin'])/(limit_values['rmax']-limit_values['rmin'])
+            if(Data['RFM']['F']!=None and limit_values['fmin']!=None and limit_values['fmax']!=None):
+                Data['RFM']['F_n']=(Data['RFM']['F']-limit_values['fmin'])/(limit_values['fmax']-limit_values['fmin'])
+            if(Data['RFM']['M']!=None and limit_values['mmin']!=None and limit_values['mmax']!=None):
+                Data['RFM']['M_n']=(Data['RFM']['M']-limit_values['mmin'])/(limit_values['mmax']-limit_values['mmin'])
+            if(Data['CLV']['CV']!=None and limit_values['cvmin']!=None and limit_values['cvmax']!=None):
+                Data['CLV']['CV_n']=(Data['CLV']['CV']-limit_values['cvmin'])/(limit_values['cvmax']-limit_values['cvmin'])
+            if(Data['CLV']['CLV']!=None and limit_values['clvmin']!=None and limit_values['clvmax']!=None):
+                Data['CLV']['CLV_n']=(Data['CLV']['CLV']-limit_values['clvmin'])/(limit_values['clvmax']-limit_values['clvmin'])
 
             #msj= ("Todo correcto")
             #return Response(status=200,response=msj)
