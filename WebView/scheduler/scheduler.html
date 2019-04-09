@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-        <title>Customer</title>
+        <title>scheduler</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <!-- Bootstrap -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -35,9 +35,11 @@
             }
             h2,h4{ 
                /* font-family: 'inherit'  !important;*/ 
-                margin-left: 10px;
-                color: #000 !important;
-                border-bottom: 1px solid #cfcfcf;
+                font-weight: 600;
+                font-size: 15px;
+                /*color: #000 !important;
+                 margin-left: 10px;
+                /*border-bottom: 1px solid #cfcfcf;
                 /*border-top: 1px solid #dcdcdc;
                 /*background:#f5f5f5;*/
             }
@@ -52,7 +54,7 @@
 
 	<body>
         <div class="container-fluid">
-            <h4>Clientes potenciales para este mes</h4>
+            <!--<h4>Clientes potenciales para este mes</h4>-->
             <div class="row">
                 <table id='clientes' class="table ">
                     <thread>
@@ -69,8 +71,9 @@
             </div>
         </div>
         <script>
-            //var producto=getGetVariable("producto");
-            var producto=1;
+            var producto=getGetVariable("producto");
+            console.log('>>Producto:'+producto)
+            //var producto=1;
             var url='http://'+window.location.host+'/scheduler/getscheduler.php?producto='+producto;
             //var post={"id":id,};
 
@@ -108,7 +111,7 @@
                 var numclientes=response.length;
                 for (var i = 0; i < numclientes; i++) {
 
-                    $('#clientes tr:last').after('<tr><th scope="row">'+(i+1)+'</th><td>'+response[i].Nombre+'</td><td>'+response[i].Producto_Predict+'</td></tr>');
+                    $('#clientes tr:last').after('<tr><th scope="row">'+(i+1)+'</th><td><a href="http://'+window.location.host+'/unifin/#Accounts/'+response[i].id+'" target="_parent">'+response[i].Nombre+'</a></td><td>'+response[i].Producto_Predict+'</td></tr>');
                 }
             }
         </script>    
