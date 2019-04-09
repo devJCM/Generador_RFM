@@ -163,6 +163,7 @@
 			//var id="377a50ed-a657-db1c-c858-591b269b1e6c";
 			var url='http://'+window.location.host+'/CustomerInfo/getCustomerInfo.php?id='+id;
 			//var post={"id":id,};
+            var productos_list={'1':'Leasing','2':'Credito Simple','3':'Credito Automotriz','4':'Factoraje','5':'Linea Credito simple'};
 
 			$.ajax({
 			  type: "GET",
@@ -272,14 +273,16 @@
                 $('#LifeTime').val(client_info.CLV.LifeTime);
                 $('#CV').val('$ '+cv.toFixed(4));
                 $('#CLV').val('$ '+clv.toFixed(4));
-                $('#Product_Predict').val(client_info.NBO.Producto_Predict);
+                $('#Product_Predict').val(productos_list[client_info.NBO.Producto_Predict]);
 
                 var numproductos=Object.keys(client_info.NBO).length-1;
                 for (var i = 1; i <= numproductos; i++) {
                     var temp=parseFloat(client_info.NBO['Producto_'+i]);
 
-                    $('#productos tr:last').after('<tr><th scope="row">'+i+'</th><td>Producto '+i+'</td><td>'+temp.toFixed(2)+'%</td></tr>');
+                    $('#productos tr:last').after('<tr><th scope="row">'+i+'</th><td class="tipo_producto">'+productos_list[i]+'</td><td>'+temp.toFixed(2)+'%</td></tr>');
                 }
+
+                $()
 
                 var numcalls=Object.keys(client_info.Calls).length;
                 for (var i = 0; i < numcalls; i++) {
@@ -290,7 +293,7 @@
                 $('.venta_call').each(function(){
                     if($(this).text()==0){
                         $(this).empty()
-                        //$(this).append('<img src="check.png">')
+                        $(this).append('<img src="check.png">')
                     }else if($(this).text()==1){
                         $(this).empty()
                         $(this).append('<img src="check.png">')
