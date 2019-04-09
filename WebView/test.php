@@ -25,10 +25,12 @@
 
             $query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));";
 
-            $query_rfm="SELECT a.id,a.name,op.date_entered,vigencialinea_c,op2.monto_c FROM accounts a, opportunities op,opportunities_cstm op2,accounts_opportunities ao WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op2.id_c=ao.opportunity_id and op.deleted=0;";
+            $query_rfm="SELECT a.id,a.name,op.date_entered,vigencialinea_c,(select max(calls.date_end) from calls where calls.parent_id=a.id and calls.status='Held' and calls.deleted=0),op2.monto_c
+                FROM accounts a, opportunities op,opportunities_cstm op2,accounts_opportunities ao
+                WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op2.id_c=ao.opportunity_id and op.deleted=0;";
 
-            //$statement=$conexion->prepare($query_fix);
-            //$statement->execute();
+            $statement=$conexion->prepare($query_fix);
+            $statement->execute();
             $statement=$conexion->prepare($query_rfm);
             $statement->execute();
             $cont=0;
@@ -196,12 +198,71 @@
             return $result;
         }
 
+        public function sendCalls(){
+            $con=new Conexion();
+            $conexion=$con->get_conexion();
+
+            $query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));";
+
+            $query_rfm="select id,name,date_end,parent_id,status from calls where deleted=0;";
+
+            //$statement=$conexion->prepare($query_fix);
+            //$statement->execute();
+            $statement=$conexion->prepare($query_rfm);
+            $statement->execute();
+            $cont=0;
+            while($renglon=$statement->fetch(PDO::FETCH_ASSOC)){
+                $arr[]=$renglon; 
+                $cont+=1;
+            }
+
+            $obj = new  stdClass;
+            $obj->deltas=0;
+            $obj->data=$arr;
+
+            echo "Cantidad de registros:".$cont."\n";
+            
+
+            $url = 'http://localhost:5000/addCalls';
+             
+            //inicializamos el objeto CUrl
+            $ch = curl_init($url);
+
+            $jsonDataEncoded = json_encode($obj);
+
+            //echo print_r($jsonDataEncoded,true);
+             
+            //Indicamos que nuestra petición sera Post
+            curl_setopt($ch, CURLOPT_POST, 1);
+             
+            //para que la peticion no imprima el resultado como un echo comun, y podamos manipularlo
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+             
+            //Adjuntamos el json a nuestra petición
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+             
+            //Agregamos los encabezados del contenido
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+             
+            //ignorar el certificado, servidor de desarrollo
+            //utilicen estas dos lineas si su petición es tipo https y estan en servidor de desarrollo
+            //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+            //curl_setopt($process, CURLOPT_SSL_VERIFYHOST, FALSE);
+             
+            //Ejecutamos la petición
+            $result = curl_exec($ch);
+            curl_close($ch); 
+
+            return $result;
+        }
+
     }   
 
     $x=new Funciones();
     $y=$x->sendRFM();
     //$y=$x->sendNBO_m();
     //$y=$x->sendNBO();
+    //$y=$x->sendCalls();
 
     //echo json_encode($y);
     echo $y;

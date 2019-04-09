@@ -99,6 +99,17 @@ CREATE TABLE IF NOT EXISTS scheduler_out (Id INT(11) NOT NULL AUTO_INCREMENT PRI
                                    Contactatado int(2)
                                    );
 ---
+-- calls in --
+CREATE TABLE IF NOT EXISTS calls_in (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                   Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                   Id_call VARCHAR(125),
+                                   Nombre VARCHAR(125),
+                                   Date_end datetime,	
+                                   Id_cliente VARCHAR(125),
+                                   Estado char(20),
+                                   Venta int(2)
+                                   );
+---
 select * from rfm_in;
 select * from rfm_out;
 select * from clv_out;
@@ -106,7 +117,8 @@ select * from nbo_model;
 select * from nbo_in;
 select * from nbo_out;
 select * from acreedor_out;
-select * from schedule_out;
+select * from scheduler_out;
+select * from calls_in;
 --
 -- selects getcustomerinfo
 select max(Recencia_out) from rfm_out;
@@ -139,7 +151,7 @@ SELECT Id_cliente,max(Fecha) as 'Recencia',count(Monto) as 'Frecuencia',AVG(Mont
 --
 -- llenar datos de rfm_in
 insert into rfm_in(Id_cliente,Nombre,Fecha,Vigencia,Last_call,Monto)
-SELECT a.id,a.name,op.date_entered,vigencialinea_c,(select max(calls.date_end) from calls where calls.parent_id=a.id and calls.status='Held'),op2.monto_c
+SELECT a.id,a.name,op.date_entered,vigencialinea_c,(select max(calls.date_end) from calls where calls.parent_id=a.id and calls.status='Held' and calls.deleted=0),op2.monto_c
 FROM accounts a, opportunities op,opportunities_cstm op2,accounts_opportunities ao
 WHERE a.id=ao.account_id AND op.id=ao.opportunity_id and op2.id_c=ao.opportunity_id and op.deleted=0; 
 --

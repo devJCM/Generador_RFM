@@ -138,6 +138,25 @@
                     </tbody>    
                 </table>
             </div>
+            <br>  
+            <h4>Historial de llamadas</h4>
+            <br>
+            <div class="row">
+                <table id='calls' class="table">
+                    <thread>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Llamada</th>
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Venta</th>
+                        </tr>
+                    </thread>
+                    <tbody>
+                        <tr></tr>
+                    </tbody>    
+                </table>
+            </div>
  		</div>	
         <script>
 			var id=getGetVariable("id");
@@ -157,8 +176,8 @@
             	fillfields(data);
 
 			  },
-			  error:function(){
-				console.log('error');
+              error:function(error){
+                console.log(error.responseText);
 			  },
 			});
 
@@ -221,6 +240,17 @@
 				Plotly.plot("plot", data, layout,{responsive: true})	
             }
 
+            function convertUTCDateToLocalDate(date) {
+                var newDate = new Date(date.getTime()-date.getTimezoneOffset()*60*1000);
+
+                var offset = date.getTimezoneOffset() / 60;
+                var hours = date.getHours();
+
+                newDate.setHours(hours - offset);
+
+                return newDate;   
+            }
+
 			function fillfields(client_info){
                 var cv=parseFloat(client_info.CLV.CV);
                 var clv=parseFloat(client_info.CLV.CLV);
@@ -250,6 +280,51 @@
 
                     $('#productos tr:last').after('<tr><th scope="row">'+i+'</th><td>Producto '+i+'</td><td>'+temp.toFixed(2)+'%</td></tr>');
                 }
+
+                var numcalls=Object.keys(client_info.Calls).length;
+                for (var i = 0; i < numcalls; i++) {
+                    //var temp=parseFloat(client_info.NBO['Producto_'+i]);
+                    $('#calls tr:last').after('<tr><th scope="row">'+(i+1)+'</th><td><a href="http://'+window.location.host+'/unifin/#Calls/'+client_info.Calls[i].Id_call+'" target="_parent">'+client_info.Calls[i].Nombre+'</a></td><td><p class="date_call">'+client_info.Calls[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls[i].Venta+'</td></tr>');
+                }
+
+                $('.venta_call').each(function(){
+                    if($(this).text()==0){
+                        $(this).empty()
+                        //$(this).append('<img src="check.png">')
+                    }else if($(this).text()==1){
+                        $(this).empty()
+                        $(this).append('<img src="check.png">')
+                    }    
+                });
+
+                $('.status_call').each(function(){
+                    if($(this).text()=='Held'){
+                        $(this).text('Realizada');
+                        $(this).css({"background-color":"#54cb14","color":"#fff","font-weight":"600" });
+                    }else if($(this).text()=='Planned'){
+                        $(this).text('Planificada');
+                        $(this).css({"border": "1px solid #555"});
+                    }   
+                });
+
+                Number.prototype.padLeft = function(base,chr){
+                    var  len = (String(base || 10).length - String(this).length)+1;
+                    return len > 0? new Array(len).join(chr || '0')+this : this;
+                }
+
+                $('.date_call').each(function(){
+                    var d = new Date($(this).text());
+                        dformat = [(d.getMonth()+1).padLeft(),
+                                   d.getDate().padLeft(),
+                                   d.getFullYear()].join('/') +' ' +
+                                  [d.getHours().padLeft(),
+                                   d.getMinutes().padLeft(),
+                                   d.getSeconds().padLeft()].join(':');
+                    if(d<Date.now()){
+                        $(this).css({"background-color":"#e61718","color":"#fff"});
+                    }
+                    $(this).text(dformat);
+                })
     		}
 
 		</script>

@@ -503,8 +503,9 @@ def getCustomerInfo(id):
 
         qnbo="select max(Ejecucion),Producto_Predict,Producto_1,Producto_2,Producto_3,Producto_4,Producto_5 from nbo_out where Id_cliente='%s';" %(id_cliente)
 
+        qcalls="select Id_call,Nombre,Date_end,Id_cliente,Estado,Venta from calls_in where Id_cliente='%s';" %(id_cliente)
 
-        Data={'RFM':{},'CLV':{},'NBO':{},'Credito':{}}
+        Data={'RFM':{},'CLV':{},'NBO':{},'Credito':{},'Calls':{}}
 
         limit_values=getlimitvalues()
         Data['limit_values']=limit_values
@@ -528,6 +529,23 @@ def getCustomerInfo(id):
             Data['CLV']['CV']=res[0][1]
             Data['CLV']['LifeTime']=res[0][2]
             Data['CLV']['CLV']=res[0][3]
+
+            cur.execute(qcalls)
+            res=cur.fetchall()
+            calls=[]
+            for i in range(len(res)):
+                temp={}
+                temp['Id_call']=res[i][0]
+                temp['Nombre']=res[i][1]
+                temp['Date_end']=res[i][2].strftime("%Y-%m-%d %H:%M:%S")
+                temp['Id_cliente']=res[i][3]
+                temp['Estado']=res[i][4]
+                if(res[i][5]!=None):
+                    temp['Venta']=res[i][5]
+                else:
+                    temp['Venta']=0    
+                calls.append(temp)
+            Data['Calls']=calls
 
             cur.execute(qacreedor)
             res=cur.fetchall()
@@ -1098,6 +1116,79 @@ def getschedule(producto):
 
             msj=df5.to_json(orient='records',date_format='iso')
             #msj=json.dumps(df4,default=str)
+            return Response(msj,status=200)
+
+@app.route("/addCalls",methods=['POST'])
+def addCalls(body=None):
+
+    print('Entro a addCalls')
+
+    body=request.get_json()
+
+    if body==None:
+        msj= "No se enviaron parametros POST, por lo tanto el proceso se detuvo"
+        print(msj)
+        return Response(status=400,response=msj)
+    else:
+        if "deltas" in body:
+            if(body['deltas']==0 or body['deltas']==1):
+                deltas=body['deltas']
+            else:
+                msj= 'Solo se permite el valor 1 o 0 en la key "deltas"'
+                print(msj)
+                return Response(status=400,response=msj)    
+        else:
+            msj= 'No se envió el parametro "deltas", por lo tanto el proceso se detuvo'
+            print(msj)
+            return Response(status=400,response=msj)
+        if "data" in body:
+            if(len(body['data'])>0):        
+                val=[]
+                cont=0
+                for row in body['data']:
+                    temp=[]
+                    ncol=0
+                    for column in row:
+                        temp.append(row[column])
+                        ncol=ncol+1
+                    if(ncol>5):
+                        msj='Se estan enviando mas columnas de las debidas'
+                        return Response(status=400,response=msj)   
+                    val.append(temp)
+                    cont=cont+1
+            else:
+                msj='El parametro "data" esta vacio, por lo tanto el proceso se detuvo'
+                print(msj)
+                return Response(status=400,response=msj)         
+        else:
+            msj= 'No se envió el parametro "data", por lo tanto el proceso se detuvo'
+            print(msj)
+            return Response(status=400,response=msj)
+
+        try:
+            conector=pymysql.connect(host=host,db=db,user=user_db,passwd=pass_db)
+            cursor=conector.cursor()
+
+            cursor.execute(query_fix2)
+
+            if(deltas==0):
+                print('se trunco la tabla')
+                clear_table="truncate table rfm_in;"
+                cursor.execute(clear_table)
+
+            query='insert into calls_in(Id_call,Nombre,Date_end,Id_cliente,Estado) values(%s,%s,%s,%s,%s)'
+
+            cursor.executemany(query,val)
+            conector.commit()
+            cursor.close()
+            conector.close()
+        except pymysql.Error as e:
+            msj='Err0r %d: %s' %(e.args[0],e.args[1])
+            print(msj)
+            return Response(status=400,response=msj)
+        else:
+            msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
+            print(msj)
             return Response(msj,status=200)
 
 
