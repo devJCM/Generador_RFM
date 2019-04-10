@@ -298,17 +298,37 @@ def setNBO():
 
         #---------Prediccion
 
-        print('Pronosticando predicciones....')
+        print('Pronosticando productos....')
 
-        predict_producto=model.predict(X_normalized)
+        #predict_producto=model.predict(X_normalized)
 
         probabilidades=model.predict_proba(X_normalized)
 
-        df1['predict_producto']=predict_producto
+        #df1['predict_producto']=predict_producto
 
-        dfx=pd.DataFrame(probabilidades,columns=['P1','P2','P3','P4','P5'])
+        productos=get_items()
 
-        df1=pd.concat([df1,dfx],axis=1)
+        dfx=pd.DataFrame(probabilidades,columns=list(productos.keys()))
+
+        df2=pd.concat([df1['id'],dfx],axis=1)
+        df2.head()
+        dic=df2.to_dict(orient="records")
+
+        num_productos=5
+
+        dic2=[]
+        for d in dic:
+            temp_id=d['id']
+            del d['id']
+            sorted_x = sorted(d.items(), key=lambda kv: kv[1])
+            sorted_x= sorted_x[::-1]
+            probas=sorted_x[:num_productos]
+            #print(probas)
+            d={}
+            d['id']=temp_id
+            for p in probas:
+                d[p[0]]=p[1]
+            dic2.append(d)
 
         print('Se realizara insert')
 
@@ -317,15 +337,17 @@ def setNBO():
 
         cont=0
         val=[]
-        for index,row in df1.iterrows():
-            #query="Update "+table+" set R="+str(int(row['R']))+",F="+str(int(row['F']))+",M="+str(int(row['M']))+",Categoria='"+str(row['Categoria'])+"' where "+id_RFM+"='"+str(row[id_RFM])+"';"
-            val.append((row[headers[0]],row['predict_producto'],row['P1'],row['P2'],row['P3'],row['P4'],row['P5']))
-            cont=cont+1
+
+        for d in dic2:
+            list_idproductos=list(d.keys())
+            for i in range(1,num_productos+1):
+                val.append( (d['id'],list_idproductos[i],d[list_idproductos[i]]) ) 
+                cont=cont+1   
 
         print('inserts:',cont)
 
         try:
-            query="insert into nbo_out (Id_cliente,Producto_Predict,Producto_1,Producto_2,Producto_3,Producto_4,Producto_5) values (%s,%s,%s,%s,%s,%s,%s)"
+            query="insert into nbo_out (Id_cliente,Id_producto,Producto_prob) values (%s,%s,%s)"
             cur.executemany(query,val)
             conn.commit()
             cur.close()
@@ -501,7 +523,7 @@ def getCustomerInfo(id):
 
         qacreedor="select max(Ejecucion),Acreedor,Acreedor_prob,Monto_predict,Monto_seg from acreedor_out where Id_cliente='%s';" %(id_cliente)
 
-        qnbo="select max(Ejecucion),Producto_Predict,Producto_1,Producto_2,Producto_3,Producto_4,Producto_5 from nbo_out where Id_cliente='%s';" %(id_cliente)
+        qnbo="select max(Ejecucion),Id_producto,Producto_prob from nbo_out where Id_cliente='%s' group by Id_producto;" %(id_cliente)
 
         qcalls="select Id_call,Nombre,Date_end,Id_cliente,Estado,Venta from calls_in where Id_cliente='%s';" %(id_cliente)
 
@@ -557,20 +579,28 @@ def getCustomerInfo(id):
 
             cur.execute(qnbo)
             res=cur.fetchall()
-            Data['NBO']['Producto_Predict']=res[0][1]
-            for idx,i  in enumerate(res[0]):
-                if(idx==0 or idx==1):
-                    continue
-                temp='Producto_'+str(idx-1)
-                if(i!=None):
-                    Data['NBO'][temp]=i*100    
-            
-            #Data['NBO']['Producto_1']=res[0][2]
-            #Data['NBO']['Producto_2']=res[0][3]
-            #Data['NBO']['Producto_3']=res[0][4]
-            #Data['NBO']['Producto_4']=res[0][5]
-            #Data['NBO']['Producto_5']=res[0][6]
+            productos=get_items()
+            #Data['NBO']['Producto_Predict']=res[0][1]
+            temp_prob=0
+            producto_predict=''
+            obj={}
+            for r in res:
+                if(len(r)>0):
+                    if(r[2]>temp_prob):
+                        temp_prob=r[2]
+                        producto_predict=productos[r[1]]
+                    #Data['NBO'][productos[r[1]]]=r[2]*100
+                    obj[productos[r[1]]]=r[2]*100
 
+            #---- Ordenar Resultados        
+            sorted_x = sorted(obj.items(), key=lambda kv: kv[1])
+            ordenado= sorted_x[::-1]
+            for o in ordenado:
+                Data['NBO'][o[0]]=o[1]
+            #------        
+
+            Data['NBO']['Producto_Predict']=producto_predict    
+            
             cur.close()
 
             conn.close()
@@ -1046,7 +1076,7 @@ def getschedule(producto):
             
             #AND YEAR(Date_predict) = YEAR(CURRENT_DATE());
 
-            query_nbo="select max(Ejecucion),Id_cliente,Producto_Predict from nbo_out group by Id_cliente;"
+            query_nbo="select max(Ejecucion),Id_cliente,id_producto,max(Producto_prob) from nbo_out group by Id_cliente;"
             #----Modify-----
             
             cur.execute(query_fix)
@@ -1087,9 +1117,11 @@ def getschedule(producto):
 
             print('df1:',df1.shape)
 
-            headers2=['id','Producto_Predict']
+            headers2=['id','Producto_Predict','Nombre_producto']
             dataset_dummy2={}
             filas=0
+
+            productos=get_items()
 
             for h in headers2:
                 dataset_dummy2[h]=[]
@@ -1097,8 +1129,9 @@ def getschedule(producto):
             if(len(res2)>0):
                 for r in res2:
                     filas+=1
-                    for i in range(1,len(headers2)+1):
-                        dataset_dummy2[headers2[i-1]].append(r[i])
+                    dataset_dummy2[headers2[0]].append(r[1])
+                    dataset_dummy2[headers2[1]].append(r[2])
+                    dataset_dummy2[headers2[2]].append(productos[r[2]])
 
             print('El numero de filas de este dataset2 es de:'+str(filas))
 
@@ -1110,7 +1143,9 @@ def getschedule(producto):
 
             print('df3:',df3.shape)
 
-            df4=df3[df3['Producto_Predict']==int(producto)]
+            #print(df3.dtypes)
+
+            df4=df3[df3['Producto_Predict']==producto]
 
             print('df4:',df4.shape)
 
@@ -1199,7 +1234,34 @@ def addCalls(body=None):
 
 
 
+def get_items():
 
+    print('Entro a get_items')
+
+    try:
+        conn=pymysql.connect(host='localhost', user='root', passwd='', db='CustomerInfo')
+        cur=conn.cursor()
+        query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
+        cur.execute(query_fix)
+        query="SELECT MAX(Ejecucion),Id_producto,Descripcion from items group by Id_producto;"
+        cur.execute(query)
+        res = cur.fetchall()
+        res
+        headers={}
+        for r in res:
+            headers[r[1]]=r[2]
+
+        cur.close()
+
+        conn.close()
+
+    except pymysql.Error as e:
+        msj= ("Error %d: %s" % (e.args[0], e.args[1]))
+        print(msj)
+        return Response(status=400,response=msj)
+    else:
+    
+        return headers
 
 def checkBodysetRFM(body):
         c=0

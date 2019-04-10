@@ -70,12 +70,8 @@ alter table nbo_in drop column Etapa,drop column Subetapa,drop column Monto,drop
 CREATE TABLE IF NOT EXISTS nbo_out (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 								   Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                    Id_cliente VARCHAR(125),
-                                   Producto_Predict int(2),
-                                   Producto_1 double(8,4),
-                                   Producto_2 double(8,4),
-                                   Producto_3 double(8,4),
-                                   Producto_4 double(8,4),
-                                   Producto_5 double(8,4)
+                                   Id_producto VARCHAR(125),
+                                   Producto_prob double(8,4)
                                    );
 ---
 -- acreedor_out --
@@ -109,6 +105,16 @@ CREATE TABLE IF NOT EXISTS calls_in (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY 
                                    Estado char(20),
                                    Venta int(2)
                                    );
+---
+-- items--
+CREATE TABLE IF NOT EXISTS items (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                   Ejecucion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                   Id_producto VARCHAR(125),
+                                   Descripcion VARCHAR(125)
+                                   );
+                                   
+insert into items(Id_producto,Descripcion) values(1,'Leasing'),(2,'Credito Simple'),(3,'Credito Automotriz'),(4,'Factoraje'),(5,'Linea Credito Simple');
+select * from items;						
 ---
 select * from rfm_in;
 select * from rfm_out;
