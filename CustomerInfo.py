@@ -527,6 +527,8 @@ def getCustomerInfo(id):
 
         qcalls="select Id_call,Nombre,Date_end,Id_cliente,Estado,Venta from calls_in where Id_cliente='%s';" %(id_cliente)
 
+        qcallspredict="select max(Ejecucion),Nombre,Date_predict from scheduler_out where Id_cliente='%s';" %(id_cliente)
+
         Data={'RFM':{},'CLV':{},'NBO':{},'Credito':{},'Calls':{}}
 
         limit_values=getlimitvalues()
@@ -552,23 +554,6 @@ def getCustomerInfo(id):
             Data['CLV']['LifeTime']=res[0][2]
             Data['CLV']['CLV']=res[0][3]
 
-            cur.execute(qcalls)
-            res=cur.fetchall()
-            calls=[]
-            for i in range(len(res)):
-                temp={}
-                temp['Id_call']=res[i][0]
-                temp['Nombre']=res[i][1]
-                temp['Date_end']=res[i][2].strftime("%Y-%m-%d %H:%M:%S")
-                temp['Id_cliente']=res[i][3]
-                temp['Estado']=res[i][4]
-                if(res[i][5]!=None):
-                    temp['Venta']=res[i][5]
-                else:
-                    temp['Venta']=0    
-                calls.append(temp)
-            Data['Calls']=calls
-
             cur.execute(qacreedor)
             res=cur.fetchall()
             Data['Credito']['Acreedor']=res[0][1]
@@ -591,18 +576,47 @@ def getCustomerInfo(id):
                         producto_predict=productos[r[1]]
                     #Data['NBO'][productos[r[1]]]=r[2]*100
                     obj[productos[r[1]]]=r[2]*100
-
             #---- Ordenar Resultados        
             sorted_x = sorted(obj.items(), key=lambda kv: kv[1])
             ordenado= sorted_x[::-1]
             for o in ordenado:
                 Data['NBO'][o[0]]=o[1]
             #------        
+            Data['NBO']['Producto_Predict']=producto_predict
 
-            Data['NBO']['Producto_Predict']=producto_predict    
+
+            cur.execute(qcalls)
+            res=cur.fetchall()
+            cur.execute(qcallspredict)
+            res2=cur.fetchall()
+            calls=[]
+            call_pred={}
+            call_pred['Nombre']='Llamar a '+res2[0][1]+' para ofrecer producto: <b>'+producto_predict
+            temp_date=res2[0][2]
+            dt = datetime.today()
+            x = datetime(dt.year, temp_date.month,temp_date.day)
+            call_pred['Date_end']=x.strftime("%Y-%m-%d")
+            call_pred['Id_cliente']=id_cliente
+            call_pred['Estado']='Planned'
+            call_pred['Venta']=0
+            Data['Calls']['Predict']=[call_pred]
+
+            for i in range(len(res)):
+                temp={}
+                temp['Id_call']=res[i][0]
+                temp['Nombre']=res[i][1]
+                temp['Date_end']=res[i][2].strftime("%Y-%m-%d %H:%M:%S")
+                temp['Id_cliente']=res[i][3]
+                temp['Estado']=res[i][4]
+                if(res[i][5]!=None):
+                    temp['Venta']=res[i][5]
+                else:
+                    temp['Venta']=0    
+                calls.append(temp)
+            Data['Calls']['CRM']=calls    
             
-            cur.close()
 
+            cur.close()
             conn.close()
 
         except pymysql.Error as e:

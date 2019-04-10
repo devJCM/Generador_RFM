@@ -113,7 +113,7 @@
                 var numclientes=response.length;
                 for (var i = 0; i < numclientes; i++) {
 
-                    $('#clientes tr:last').after('<tr><th scope="row">'+(i+1)+'</th><td><a href="http://'+window.location.host+'/unifin/#Accounts/'+response[i].id+'" target="_parent">'+response[i].Nombre+'</a></td><td>'+productos_list[response[i].Producto_Predict]+'</td></tr>');
+                    $('#clientes tr:last').after('<tr><th scope="row">'+(i+1)+'</th><td><a href="http://'+window.location.host+'/unifin/#Accounts/'+response[i].id+'" target="_parent">'+response[i].Nombre+'</a></td><td>'+response[i].Nombre_producto+'</td></tr>');
                 }
             }
         </script>    

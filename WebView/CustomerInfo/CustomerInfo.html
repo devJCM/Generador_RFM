@@ -273,21 +273,28 @@
                 $('#LifeTime').val(client_info.CLV.LifeTime);
                 $('#CV').val('$ '+cv.toFixed(4));
                 $('#CLV').val('$ '+clv.toFixed(4));
-                $('#Product_Predict').val(productos_list[client_info.NBO.Producto_Predict]);
+                $('#Product_Predict').val(client_info.NBO.Producto_Predict);
 
-                var numproductos=Object.keys(client_info.NBO).length-1;
-                for (var i = 1; i <= numproductos; i++) {
-                    var temp=parseFloat(client_info.NBO['Producto_'+i]);
+                var productos=Object.keys(client_info.NBO);
+                var numproductos=productos.length-1;
+                for (var i = 0; i < numproductos; i++) {
+                    var temp=parseFloat(client_info.NBO[productos[i]]);
 
-                    $('#productos tr:last').after('<tr><th scope="row">'+i+'</th><td class="tipo_producto">'+productos_list[i]+'</td><td>'+temp.toFixed(2)+'%</td></tr>');
+                    $('#productos tr:last').after('<tr><th scope="row">'+(i+1)+'</th><td class="tipo_producto">'+productos[i]+'</td><td>'+temp.toFixed(2)+'%</td></tr>');
                 }
 
                 $()
 
-                var numcalls=Object.keys(client_info.Calls).length;
-                for (var i = 0; i < numcalls; i++) {
+                var numcalls_predict=Object.keys(client_info.Calls.Predict).length;
+                for (var i = 0; i < numcalls_predict; i++) {
                     //var temp=parseFloat(client_info.NBO['Producto_'+i]);
-                    $('#calls tr:last').after('<tr><th scope="row">'+(i+1)+'</th><td><a href="http://'+window.location.host+'/unifin/#Calls/'+client_info.Calls[i].Id_call+'" target="_parent">'+client_info.Calls[i].Nombre+'</a></td><td><p class="date_call">'+client_info.Calls[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls[i].Venta+'</td></tr>');
+                    $('#calls tr:last').after('<tr><th scope="row">'+(i+1)+'</th><td>'+client_info.Calls.Predict[i].Nombre+'</td><td><p class="date_call">'+client_info.Calls.Predict[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls.Predict[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls.Predict[i].Venta+'</td></tr>');
+                }
+
+                var numcalls_crm=Object.keys(client_info.Calls.CRM).length;
+                for (var i = 0; i < numcalls_crm; i++) {
+                    //var temp=parseFloat(client_info.NBO['Producto_'+i]);
+                    $('#calls tr:last').after('<tr><th scope="row">'+(i+numcalls_predict+1)+'</th><td><a href="http://'+window.location.host+'/unifin/#Calls/'+client_info.Calls.CRM[i].Id_call+'" target="_parent">'+client_info.Calls.CRM[i].Nombre+'</a></td><td><p class="date_call">'+client_info.Calls.CRM[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls.CRM[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls.CRM[i].Venta+'</td></tr>');
                 }
 
                 $('.venta_call').each(function(){
@@ -317,6 +324,7 @@
 
                 $('.date_call').each(function(){
                     var d = new Date($(this).text());
+                        d=convertUTCDateToLocalDate(d);
                         dformat = [(d.getMonth()+1).padLeft(),
                                    d.getDate().padLeft(),
                                    d.getFullYear()].join('/') +' ' +
