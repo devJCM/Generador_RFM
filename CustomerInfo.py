@@ -525,7 +525,7 @@ def getCustomerInfo(id):
 
         qnbo="select max(Ejecucion),Id_producto,Producto_prob from nbo_out where Id_cliente='%s' group by Id_producto;" %(id_cliente)
 
-        qcalls="select Id_call,Nombre,Date_end,Id_cliente,Estado,Venta from calls_in where Id_cliente='%s';" %(id_cliente)
+        qcalls="select Id_call,Nombre,Date_end,Id_cliente,Estado,Venta,Id_producto from calls_in where Id_cliente='%s';" %(id_cliente)
 
         qcallspredict="select max(Ejecucion),Nombre,Date_predict from scheduler_out where Id_cliente='%s';" %(id_cliente)
 
@@ -608,11 +608,26 @@ def getCustomerInfo(id):
                 temp['Date_end']=res[i][2].strftime("%Y-%m-%d %H:%M:%S")
                 temp['Id_cliente']=res[i][3]
                 temp['Estado']=res[i][4]
+
                 if(res[i][5]!=None):
                     temp['Venta']=res[i][5]
                 else:
-                    temp['Venta']=0    
+                    #temp['Venta']=0
+                    temp['Venta']=np.random.randint(2) #---!!!Temporal¡¡¡¡...........
+
+                if(res[i][6]!=None):
+                    temp['Producto_sold']=productos[res[i][6]]
+                else:
+                    #temp['Producto_sold']='-'
+                    #---!!!Temporal¡¡¡¡...........
+                    if(temp['Venta']==1):
+                        temp['Producto_sold']=productos[str(np.random.randint(1,6))]
+                    else:
+                        temp['Producto_sold']='-'    
+                    #---!!!Temporal¡¡¡¡...........
+
                 calls.append(temp)
+
             Data['Calls']['CRM']=calls    
             
 

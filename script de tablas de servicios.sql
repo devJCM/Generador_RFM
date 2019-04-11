@@ -103,7 +103,8 @@ CREATE TABLE IF NOT EXISTS calls_in (Id INT(11) NOT NULL AUTO_INCREMENT PRIMARY 
                                    Date_end datetime,	
                                    Id_cliente VARCHAR(125),
                                    Estado char(20),
-                                   Venta int(2)
+                                   Venta int(2),
+                                   Id_producto VARCHAR(125)
                                    );
 ---
 -- items--
