@@ -862,7 +862,7 @@ def getInfo(body=None):
 
     query_rfm="select Ejecucion,Id_cliente,Recencia_out,Frecuencia_out,Monto_out,Segmento from rfm_out"
     query_clv="select Ejecucion,Id_cliente,Valor_cliente,Vida_cliente,CLV from clv_out"
-    query_nbo="select Ejecucion,Id_cliente,Producto_Predict,Producto_1,Producto_2,Producto_3,Producto_4,Producto_5 from nbo_out"
+    query_nbo="select Ejecucion,Id_cliente,Id_producto,Producto_prob from nbo_out"
     query_acreedor="select Ejecucion,Id_cliente,Acreedor,Acreedor_prob,Monto_predict,Monto_seg from acreedor_out"
 
 
@@ -912,7 +912,7 @@ def getInfo(body=None):
 
         headers_rfm=['Ejecucion','Id_cliente','Recencia_out','Frecuencia_out','Monto_out','Segmento']
         headers_clv=['Ejecucion','Id_cliente','Valor_cliente','Vida_cliente','CLV']
-        headers_nbo=['Ejecucion','Id_cliente','Producto_Predict','Producto_1','Producto_2','Producto_3','Producto_4','Producto_5']
+        headers_nbo=['Ejecucion','Id_cliente','Id_producto','Producto_prob']
         headers_acreedor=['Ejecucion','Id_cliente','Acreedor','Acreedor_prob','Monto_predict','Monto_seg']
 
         #-- TIENEN QUE ESTAR EN EL MISMO ORDEN PARA QUE LA ASIGNACION SEA CORRECTA
