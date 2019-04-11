@@ -1064,9 +1064,9 @@ def setscheduler():
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
             return Response(msj,status=200)
 
-@app.route("/getscheduler/",methods=['GET'])
+@app.route("/getscheduler",methods=['GET'])
 @app.route("/getscheduler/<producto_get>",methods=['GET'])
-def getschedule(producto_get):
+def getscheduler(producto_get=None):
 
     print('Entro a getscheduler')
 
