@@ -1064,113 +1064,111 @@ def setscheduler():
             msj='Operacion concluida, se insertaron '+str(cont)+' regitros'
             return Response(msj,status=200)
 
-@app.route("/getscheduler/<producto>",methods=['GET'])
-def getschedule(producto):
+@app.route("/getscheduler/",methods=['GET'])
+@app.route("/getscheduler/<producto_get>",methods=['GET'])
+def getschedule(producto_get):
 
     print('Entro a getscheduler')
 
-    if producto==None:
-        msj= "Es necesario el Numero del promotor, por lo tanto el proceso se detuvo"
+    if producto_get!=None:
+        print('>>Producto_get:',producto_get)
+
+    try:
+        conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+
+        cur=conn.cursor()
+
+        #----Modify-----
+        query_extract="SELECT max(Ejecucion),Id_cliente,Nombre,Date_predict,Vigencia,Last_call FROM scheduler_out WHERE MONTH(Date_predict) = MONTH(CURRENT_DATE()) and Vigencia < CURDATE() AND (SELECT TIMESTAMPDIFF(DAY,Last_call,CURRENT_DATE()))>15 group by Id_cliente;"
+        
+        #AND YEAR(Date_predict) = YEAR(CURRENT_DATE());
+
+        query_nbo="select max(Ejecucion),Id_cliente,id_producto,max(Producto_prob) from nbo_out group by Id_cliente;"
+        #----Modify-----
+        
+        cur.execute(query_fix)
+
+        cur.execute(query_extract)
+
+        res = cur.fetchall()
+
+        cur.execute(query_nbo)
+
+        res2 = cur.fetchall()
+
+        cur.close()
+
+        conn.close()
+
+    except pymysql.Error as e:
+        msj= ("Error %d: %s" % (e.args[0], e.args[1]))
         print(msj)
         return Response(status=400,response=msj)
     else:
+        headers=['id','Nombre','Date_predict','Vigencia','Last_call']
+        dataset_dummy={}
+        filas=0
 
-        print('>>Producto:',producto)
-        #today = datetime.now()
-        #datem = datetime.today().strftime("%Y-%m")
-        #datem = datetime.strptime(datem, "%Y-%m")
+        for h in headers:
+            dataset_dummy[h]=[]
 
-        try:
-            conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
+        if(len(res)>0):
+            for r in res:
+                filas+=1
+                for i in range(1,len(headers)+1):
+                    dataset_dummy[headers[i-1]].append(r[i])
 
-            cur=conn.cursor()
+        print('El numero de filas de este dataset es de:'+str(filas))
 
-            #----Modify-----
-            query_extract="SELECT max(Ejecucion),Id_cliente,Nombre,Date_predict,Vigencia,Last_call FROM scheduler_out WHERE MONTH(Date_predict) = MONTH(CURRENT_DATE()) and Vigencia < CURDATE() AND (SELECT TIMESTAMPDIFF(DAY,Last_call,CURRENT_DATE()))>15 group by Id_cliente;"
+        df1=pd.DataFrame(dataset_dummy)
+
+        print('df1:',df1.shape)
+
+        headers2=['id','Producto_Predict','Nombre_producto']
+        dataset_dummy2={}
+        filas=0
+
+        productos=get_items()
+
+        for h in headers2:
+            dataset_dummy2[h]=[]
+
+        if(len(res2)>0):
+            for r in res2:
+                filas+=1
+                dataset_dummy2[headers2[0]].append(r[1])
+                dataset_dummy2[headers2[1]].append(r[2])
+                dataset_dummy2[headers2[2]].append(productos[r[2]])
+
+        print('El numero de filas de este dataset2 es de:'+str(filas))
+
+        df2=pd.DataFrame(dataset_dummy2)
+
+        print('df2:',df2.shape)
+
+        df3=df1.merge(df2,how='left',on=['id'])
+
+        print('df3:',df3.shape)
+
+        #print(df3.dtypes)
+        if producto_get!=None:
+
+            df4=df3[df3['Producto_Predict']==producto_get]
             
-            #AND YEAR(Date_predict) = YEAR(CURRENT_DATE());
-
-            query_nbo="select max(Ejecucion),Id_cliente,id_producto,max(Producto_prob) from nbo_out group by Id_cliente;"
-            #----Modify-----
-            
-            cur.execute(query_fix)
-
-            cur.execute(query_extract)
-
-            res = cur.fetchall()
-
-            cur.execute(query_nbo)
-
-            res2 = cur.fetchall()
-
-            cur.close()
-
-            conn.close()
-
-        except pymysql.Error as e:
-            msj= ("Error %d: %s" % (e.args[0], e.args[1]))
-            print(msj)
-            return Response(status=400,response=msj)
-        else:
-            headers=['id','Nombre','Date_predict','Vigencia','Last_call']
-            dataset_dummy={}
-            filas=0
-
-            for h in headers:
-                dataset_dummy[h]=[]
-
-            if(len(res)>0):
-                for r in res:
-                    filas+=1
-                    for i in range(1,len(headers)+1):
-                        dataset_dummy[headers[i-1]].append(r[i])
-
-            print('El numero de filas de este dataset es de:'+str(filas))
-
-            df1=pd.DataFrame(dataset_dummy)
-
-            print('df1:',df1.shape)
-
-            headers2=['id','Producto_Predict','Nombre_producto']
-            dataset_dummy2={}
-            filas=0
-
-            productos=get_items()
-
-            for h in headers2:
-                dataset_dummy2[h]=[]
-
-            if(len(res2)>0):
-                for r in res2:
-                    filas+=1
-                    dataset_dummy2[headers2[0]].append(r[1])
-                    dataset_dummy2[headers2[1]].append(r[2])
-                    dataset_dummy2[headers2[2]].append(productos[r[2]])
-
-            print('El numero de filas de este dataset2 es de:'+str(filas))
-
-            df2=pd.DataFrame(dataset_dummy2)
-
-            print('df2:',df2.shape)
-
-            df3=df1.merge(df2,how='left',on=['id'])
-
-            print('df3:',df3.shape)
-
-            #print(df3.dtypes)
-
-            df4=df3[df3['Producto_Predict']==producto]
-
             print('df4:',df4.shape)
 
             df5=df4.drop(['Vigencia', 'Last_call'], axis=1)
 
             print('df5:',df5.shape)
             #print(df5.head())
+        else:
+            df5=df3.drop(['Vigencia', 'Last_call'], axis=1)
 
-            msj=df5.to_json(orient='records',date_format='iso')
-            #msj=json.dumps(df4,default=str)
-            return Response(msj,status=200)
+            print('df5:',df5.shape)   
+
+        msj=df5.to_json(orient='records',date_format='iso')
+        #msj=json.dumps(df4,default=str)
+        return Response(msj,status=200)
 
 @app.route("/addCalls",methods=['POST'])
 def addCalls(body=None):
