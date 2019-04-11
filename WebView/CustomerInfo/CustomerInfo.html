@@ -150,6 +150,7 @@
                             <th scope="col">Fecha</th>
                             <th scope="col">Estado</th>
                             <th scope="col">Venta</th>
+                            <th scope="col">Producto</th>
                         </tr>
                     </thread>
                     <tbody>
@@ -288,18 +289,19 @@
                 var numcalls_predict=Object.keys(client_info.Calls.Predict).length;
                 for (var i = 0; i < numcalls_predict; i++) {
                     //var temp=parseFloat(client_info.NBO['Producto_'+i]);
-                    $('#calls tr:last').after('<tr><th scope="row">'+(i+1)+'</th><td>'+client_info.Calls.Predict[i].Nombre+'</td><td><p class="date_call">'+client_info.Calls.Predict[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls.Predict[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls.Predict[i].Venta+'</td></tr>');
+                    $('#calls tr:last').after('<tr class="call_predict"><th scope="row">'+(i+1)+'</th><td>'+client_info.Calls.Predict[i].Nombre+'</td><td><p class="date_call">'+client_info.Calls.Predict[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls.Predict[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls.Predict[i].Venta+'</td></tr>');
                 }
 
                 var numcalls_crm=Object.keys(client_info.Calls.CRM).length;
                 for (var i = 0; i < numcalls_crm; i++) {
                     //var temp=parseFloat(client_info.NBO['Producto_'+i]);
-                    $('#calls tr:last').after('<tr><th scope="row">'+(i+numcalls_predict+1)+'</th><td><a href="http://'+window.location.host+'/unifin/#Calls/'+client_info.Calls.CRM[i].Id_call+'" target="_parent">'+client_info.Calls.CRM[i].Nombre+'</a></td><td><p class="date_call">'+client_info.Calls.CRM[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls.CRM[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls.CRM[i].Venta+'</td></tr>');
+                    $('#calls tr:last').after('<tr><th scope="row">'+(i+numcalls_predict+1)+'</th><td><a href="http://'+window.location.host+'/unifin/#Calls/'+client_info.Calls.CRM[i].Id_call+'" target="_parent">'+client_info.Calls.CRM[i].Nombre+'</a></td><td><p class="date_call">'+client_info.Calls.CRM[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls.CRM[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls.CRM[i].Venta+'</td><td class="producto_sold"><b>'+client_info.Calls.CRM[i].Producto_sold+'</b></td></tr>');
                 }
 
                 $('.venta_call').each(function(){
                     if($(this).text()==0){
-                        $(this).empty()
+                        //$(this).empty()
+                        $(this).text('-')
                         //$(this).append('<img src="check.png">')
                     }else if($(this).text()==1){
                         $(this).empty()
@@ -324,6 +326,7 @@
 
                 $('.date_call').each(function(){
                     var d = new Date($(this).text());
+                    var today=new Date();
                         d=convertUTCDateToLocalDate(d);
                         dformat = [(d.getMonth()+1).padLeft(),
                                    d.getDate().padLeft(),
@@ -331,8 +334,11 @@
                                   [d.getHours().padLeft(),
                                    d.getMinutes().padLeft(),
                                    d.getSeconds().padLeft()].join(':');
-                    if(d<Date.now()){
+                    /*if(d<Date.now()){
                         $(this).css({"background-color":"#e61718","color":"#fff"});
+                    }*/
+                    if (((today.getMonth()+1)<(d.getMonth()+1)) && ($(this).parent().parent().attr('class')=='call_predict') ) {
+                        $(this).parent().parent().hide()
                     }
                     $(this).text(dformat);
                 })
