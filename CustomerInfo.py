@@ -1154,17 +1154,16 @@ def getschedule(producto_get):
         if producto_get!=None:
 
             df4=df3[df3['Producto_Predict']==producto_get]
-            
+
             print('df4:',df4.shape)
 
             df5=df4.drop(['Vigencia', 'Last_call'], axis=1)
 
-            print('df5:',df5.shape)
-            #print(df5.head())
         else:
             df5=df3.drop(['Vigencia', 'Last_call'], axis=1)
 
-            print('df5:',df5.shape)   
+        print('df5:',df5.shape)
+        #print(df5.head())   
 
         msj=df5.to_json(orient='records',date_format='iso')
         #msj=json.dumps(df4,default=str)
