@@ -59,21 +59,19 @@
                 </div>
                 <div class="col align-self-center" id="righttside">
                     <h4>Credito</h4>
-                    <div class="row">
-                        <div class="col-lg-3">
+                    <div class="row justify-content-between">
+                        <div class="col-lg-6">
                             <label for="Acreedor">Viable para credito</label>
-                              <input type="text" id="Acreedor" class="form-control" aria-describedby="basic-addon3" disabled="">
-                        </div>    
-                        <div class="col-lg-3">    
-                            <label for="Acreedor_prob">Nivel de Confianza</label>
-                            <input type="text" id="Acreedor_prob" class="form-control" aria-describedby="basic-addon3" disabled>
-                        </div>
-                        <div class="col-lg-3" id="creditlineseg">    
+                            <input type="text" id="Acreedor" class="form-control" aria-describedby="basic-addon3" disabled="">
+     
                             <label for="Monto_seg">Linea de credito de Segmento</label>
                             <input type="text" id="Monto_seg" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>
-                        <div class="col-lg-3" id="creditlineind">    
-                            <label for="Monto_predict">Linea de credito Individual</label>
+                        <div class="col-lg-6">
+                            <label for="Acreedor_prob">Nivel de Confianza</label>
+                            <input type="text" id="Acreedor_prob" class="form-control" aria-describedby="basic-addon3" disabled>
+   
+                            <label for="Monto_predict">Linea de credito<br>Individual</label>
                             <input type="text" id="Monto_predict" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>        
                     </div>
@@ -101,7 +99,7 @@
                     <h4>CLV</h4>
                     <div class="row">
                         <div class="col-lg-4">
-                            <label for="LifeTime">Tiempo de Vida Promedio de Cliente (Meses)</label>
+                            <label for="LifeTime">Tiempo de Vida<br>Promedio de Cliente (Meses)</label>
                             <input type="text" id="LifeTime" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>
                         <div class="col-lg-4">   
@@ -115,48 +113,53 @@
                     </div>
                 </div>
             </div>
-            <br>  
-            <h4>NBO</h4>
-            <div class="row">  
-                <div class="col-6">
-                    <label for="Product_Predict">Producto Recomendado</label>
-                    <input type="text" id="Product_Predict" class="form-control" aria-describedby="basic-addon3" disabled>
+            <br>
+            <div class="row" id="section2">  
+                <div class="col">
+                    <h4>NBO</h4>
+                    <div class="row">  
+                        <div class="col-6" >
+                            <label for="Product_Predict">Producto Recomendado</label>
+                            <input type="text" id="Product_Predict" class="form-control" aria-describedby="basic-addon3" disabled>
+                        </div>
+                    </div>
+                    <br>
+                    <div>                  
+                        <table id='productos' class="table">
+                            <thread>
+                                <tr>
+                                    <th scope="col">#</th> 
+                                    <th scope="col">Producto</th>
+                                    <th scope="col">Nivel de Confianza</th>
+                                </tr>
+                            </thread>
+                            <tbody>
+                                <tr></tr>
+                            </tbody>    
+                        </table>                     
+                    </div>
                 </div>
-            </div>
-            <br>
-            <div class="row">
-                <table id='productos' class="table ">
-                    <thread>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Producto</th>
-                            <th scope="col">Nivel de Confianza</th>
-                        </tr>
-                    </thread>
-                    <tbody>
-                        <tr></tr>
-                    </tbody>    
-                </table>
-            </div>
-            <br>  
-            <h4>Historial de llamadas</h4>
-            <br>
-            <div class="row">
-                <table id='calls' class="table">
-                    <thread>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Llamada</th>
-                            <th scope="col">Fecha</th>
-                            <th scope="col">Estado</th>
-                            <th scope="col">Venta</th>
-                            <th scope="col">Producto</th>
-                        </tr>
-                    </thread>
-                    <tbody>
-                        <tr></tr>
-                    </tbody>    
-                </table>
+                <div class="col">
+                    <h4>Historial de llamadas</h4>
+                    <br>
+                    <div>
+                        <table id='calls' class="table">
+                            <thread>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Llamada</th>
+                                    <th scope="col">Fecha</th>
+                                    <th scope="col">Estado</th>
+                                    <th scope="col">Venta</th>
+                                    <th scope="col">Producto</th>
+                                </tr>
+                            </thread>
+                            <tbody>
+                                <tr></tr>
+                            </tbody>    
+                        </table>
+                    </div>
+                </div>
             </div>
  		</div>	
         <script>
@@ -254,15 +257,19 @@
             }
 
 			function fillfields(client_info){
-                var cv=parseFloat(client_info.CLV.CV);
-                var clv=parseFloat(client_info.CLV.CLV);
-                var Monto_seg=parseFloat(client_info.Credito.Monto_seg)
-                var Monto_predict=parseFloat(client_info.Credito.Monto_predict)
+                var cv=parseFloat(parseFloat(client_info.CLV.CV).toFixed(2)).toLocaleString('en');
+                cv=(cv.indexOf(".")==-1)? cv+='.00':cv;
+                var clv=parseFloat(parseFloat(client_info.CLV.CLV).toFixed(2)).toLocaleString('en');
+                clv=(clv.indexOf(".")==-1)? clv+='.00':clv;
+                var Monto_seg=parseFloat(parseFloat(client_info.Credito.Monto_seg).toFixed(2)).toLocaleString('en');
+                Monto_seg=(Monto_seg.indexOf(".")==-1)? Monto_seg+='.00':Monto_seg;
+                var Monto_predict=parseFloat(parseFloat(client_info.Credito.Monto_predict).toFixed(2)).toLocaleString('en');
+                Monto_predict=(Monto_predict.indexOf(".")==-1)? Monto_predict+='.00':Monto_predict;
 
                 $('#Acreedor').val(client_info.Credito.Acreedor);
                 $('#Acreedor_prob').val(client_info.Credito.Acreedor_prob+'%');
-                $('#Monto_seg').val('$ '+Monto_seg.toFixed(4));
-                $('#Monto_predict').val('$ '+Monto_predict.toFixed(4));
+                $('#Monto_seg').val('$ '+Monto_seg);
+                $('#Monto_predict').val('$ '+Monto_predict);
                 if(client_info.Credito.Acreedor=='No'){
                     $('#creditlineind').hide();
                     $('#creditlineseg').hide();
@@ -271,9 +278,9 @@
                 $('#F').val(client_info.RFM.F);
                 $('#M').val(client_info.RFM.M);
                 $('#Segmento').val(client_info.RFM.Segmento);
-                $('#LifeTime').val(client_info.CLV.LifeTime);
-                $('#CV').val('$ '+cv.toFixed(4));
-                $('#CLV').val('$ '+clv.toFixed(4));
+                $('#LifeTime').val(parseFloat(client_info.CLV.LifeTime).toFixed(2));
+                $('#CV').val('$ '+cv);
+                $('#CLV').val('$ '+clv);
                 $('#Product_Predict').val(client_info.NBO.Producto_Predict);
 
                 var productos=Object.keys(client_info.NBO);
@@ -289,7 +296,7 @@
                 var numcalls_predict=Object.keys(client_info.Calls.Predict).length;
                 for (var i = 0; i < numcalls_predict; i++) {
                     //var temp=parseFloat(client_info.NBO['Producto_'+i]);
-                    $('#calls tr:last').after('<tr class="call_predict"><th scope="row">'+(i+1)+'</th><td>'+client_info.Calls.Predict[i].Nombre+'</td><td><p class="date_call">'+client_info.Calls.Predict[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls.Predict[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls.Predict[i].Venta+'</td></tr>');
+                    $('#calls tr:last').after('<tr class="call_predict"><th scope="row">'+(i+1)+'</th><td>'+client_info.Calls.Predict[i].Nombre+'</td><td><p class="date_call">'+client_info.Calls.Predict[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls.Predict[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls.Predict[i].Venta+'</td><td>-</td></tr>');
                 }
 
                 var numcalls_crm=Object.keys(client_info.Calls.CRM).length;

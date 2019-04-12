@@ -585,8 +585,6 @@ def getCustomerInfo(id):
             Data['NBO']['Producto_Predict']=producto_predict
 
 
-            cur.execute(qcalls)
-            res=cur.fetchall()
             cur.execute(qcallspredict)
             res2=cur.fetchall()
             calls=[]
@@ -601,11 +599,16 @@ def getCustomerInfo(id):
             call_pred['Venta']=0
             Data['Calls']['Predict']=[call_pred]
 
+            cur.execute(qcalls)
+            res=cur.fetchall()
             for i in range(len(res)):
                 temp={}
                 temp['Id_call']=res[i][0]
                 temp['Nombre']=res[i][1]
-                temp['Date_end']=res[i][2].strftime("%Y-%m-%d %H:%M:%S")
+                if(res[i][2]!=None):
+                    temp['Date_end']=res[i][2].strftime("%Y-%m-%d %H:%M:%S")
+                else:
+                    temp['Date_end']=datetime(1,1,1).strftime("%Y-%m-%d %H:%M:%S")
                 temp['Id_cliente']=res[i][3]
                 temp['Estado']=res[i][4]
 
@@ -1027,7 +1030,7 @@ def setscheduler():
         df1=df1.drop(indexes_empties)
         df1= df1.reset_index(drop=True)
 
-        df1[headers[4]]=df1[headers[4]].fillna(pd.to_datetime(0, unit='s'))
+        df1[headers[4]]=df1[headers[4]].fillna(pd.to_datetime(0, unit='s')) #convertir 0 a fecha
 
         #print(df1.dtypes)
 
