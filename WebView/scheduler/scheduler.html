@@ -74,9 +74,13 @@
             var productos_list={'1':'Leasing','2':'Credito Simple','3':'Credito Automotriz','4':'Factoraje','5':'Linea Credito simple'};
 
             var producto=getGetVariable("producto");
-            console.log('>>Producto:'+producto)
+            console.log('>>Productojs:'+producto)
             //var producto=1;
-            var url='http://'+window.location.host+'/scheduler/getscheduler.php?producto='+producto;
+            if(typeof producto != "undefined" && producto!=false){
+                var url='http://'+window.location.host+'/scheduler/getscheduler.php?producto='+producto;
+            }else{
+                var url='http://'+window.location.host+'/scheduler/getscheduler.php';
+            }    
             //var post={"id":id,};
 
             $.ajax({

@@ -79,8 +79,11 @@
         }
 
         public function getscheduler($producto){
-
-            $url = 'http://localhost:5000/getscheduler/'.$producto;
+            if($producto!=null){
+                $url = 'http://localhost:5000/getscheduler/'.$producto;
+            }else{
+                $url = 'http://localhost:5000/getscheduler';
+            }    
              
             //inicializamos el objeto CUrl
             $ch = curl_init($url);
@@ -92,14 +95,13 @@
             curl_close($ch); 
 
             return $result;
-
         }
     }   
 
     if(isset($_GET['producto'])){
         $producto=$_GET['producto'];
     }else{
-        echo json_encode("No se envio parametro POST");
+        $producto=null;
     }
 
     $x=new Funciones();
