@@ -589,7 +589,10 @@ def getCustomerInfo(id):
             res2=cur.fetchall()
             calls=[]
             call_pred={}
-            call_pred['Nombre']='Llamar a '+res2[0][1]+' para ofrecer producto: <b>'+producto_predict
+            if(res2[0][1]!=None):
+                call_pred['Nombre']='Llamar a '+res2[0][1]+' para ofrecer producto: <b>'+producto_predict
+            else:
+                call_pred['Nombre']='Llamar para ofrecer producto: <b>'+producto_predict
             temp_date=res2[0][2]
             dt = datetime.today()
             x = datetime(dt.year, temp_date.month,temp_date.day)
@@ -1268,7 +1271,7 @@ def get_items():
     print('Entro a get_items')
 
     try:
-        conn=pymysql.connect(host='localhost', user='root', passwd='', db='CustomerInfo')
+        conn=pymysql.connect(host=host, user=user_db, passwd=pass_db, db=db)
         cur=conn.cursor()
         query_fix="SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
         cur.execute(query_fix)
