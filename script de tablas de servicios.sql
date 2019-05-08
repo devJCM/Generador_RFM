@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS scheduler_out (Id INT(11) NOT NULL AUTO_INCREMENT PRI
                                    Date_predict DATETIME,
                                    Vigencia DATETIME,
                                    Last_call datetime,
-                                   Contactatado int(2)
+                                   Contactado int(2)
                                    );
 ---
 -- calls in --
