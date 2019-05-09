@@ -7,6 +7,7 @@ drop table if exists rfm_out;
 drop table if exists clv_out;
 drop table if exists nbo_out;
 drop table if exists creditor_out;
+drop table if exists scheduler_out;
 
 create database CustomerInfo;
 use CustomerInfo;
