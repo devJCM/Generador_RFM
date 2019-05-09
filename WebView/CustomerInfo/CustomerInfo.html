@@ -58,21 +58,21 @@
                     <div class="row justify-content-center" id="plot"><!-- Plotly chart will be drawn inside this DIV --></div>
                 </div>
                 <div class="col align-self-center" id="righttside">
-                    <h4>Credito</h4>
+                    <h4>Cr&eacute;dito</h4>
                     <div class="row justify-content-between">
                         <div class="col-lg-6">
-                            <label for="Acreedor">Viable para credito</label>
-                            <input type="text" id="Acreedor" class="form-control" aria-describedby="basic-addon3" disabled="">
+                            <label for="creditor">Viable para cr&eacute;dito</label>
+                            <input type="text" id="creditor" class="form-control" aria-describedby="basic-addon3" disabled="">
      
-                            <label for="Monto_seg">Linea de credito de Segmento</label>
-                            <input type="text" id="Monto_seg" class="form-control" aria-describedby="basic-addon3" disabled>
+                            <label for="amount_seg">Linea de cr&eacute;dito de segment</label>
+                            <input type="text" id="amount_seg" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>
                         <div class="col-lg-6">
-                            <label for="Acreedor_prob">Nivel de Confianza</label>
-                            <input type="text" id="Acreedor_prob" class="form-control" aria-describedby="basic-addon3" disabled>
+                            <label for="creditor_prob">Nivel de Confianza</label>
+                            <input type="text" id="creditor_prob" class="form-control" aria-describedby="basic-addon3" disabled>
    
-                            <label for="Monto_predict">Linea de credito<br>Individual</label>
-                            <input type="text" id="Monto_predict" class="form-control" aria-describedby="basic-addon3" disabled>
+                            <label for="amount_predict">Linea de cr&eacute;dito<br>Individual</label>
+                            <input type="text" id="amount_predict" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>        
                     </div>
                     <br>
@@ -91,24 +91,24 @@
                             <input type="text" id="M" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>  
                         <div class="col-md-3"> 
-                            <label for="Segmento">Segmento</label>
-                            <input type="text" id="Segmento" class="form-control" aria-describedby="basic-addon3" disabled>
+                            <label for="segment">Segmento</label>
+                            <input type="text" id="segment" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>    
                     </div>
                     <br>
                     <h4>CLV</h4>
                     <div class="row">
                         <div class="col-lg-4">
-                            <label for="LifeTime">Tiempo de Vida<br>Promedio de Cliente (Meses)</label>
-                            <input type="text" id="LifeTime" class="form-control" aria-describedby="basic-addon3" disabled>
+                            <label for="lifetime">Tiempo de Vida<br>Promedio de Cliente (Meses)</label>
+                            <input type="text" id="lifetime" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>
                         <div class="col-lg-4">   
-                            <label for="CV">Valor de Cliente</label>
-                            <input type="text" id="CV" class="form-control" aria-describedby="basic-addon3" disabled>
+                            <label for="cv">Valor de Cliente</label>
+                            <input type="text" id="cv" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>
                         <div class="col-lg-4">  
-                            <label for="CLV">Customer LifeTime Value</label>
-                            <input type="text" id="CLV" class="form-control" aria-describedby="basic-addon3" disabled>
+                            <label for="clv">Customer lifetime Value</label>
+                            <input type="text" id="clv" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>
                     </div>
                 </div>
@@ -119,8 +119,8 @@
                     <h4>NBO</h4>
                     <div class="row">  
                         <div class="col-6" >
-                            <label for="Product_Predict">Producto Recomendado</label>
-                            <input type="text" id="Product_Predict" class="form-control" aria-describedby="basic-addon3" disabled>
+                            <label for="Product_predict">Producto Recomendado</label>
+                            <input type="text" id="Product_predict" class="form-control" aria-describedby="basic-addon3" disabled>
                         </div>
                     </div>
                     <br>
@@ -167,7 +167,7 @@
 			//var id="377a50ed-a657-db1c-c858-591b269b1e6c";
 			var url='http://'+window.location.host+'/CustomerInfo/getCustomerInfo.php?id='+id;
 			//var post={"id":id,};
-            var productos_list={'1':'Leasing','2':'Credito Simple','3':'Credito Automotriz','4':'Factoraje','5':'Linea Credito simple'};
+            //var productos_list={'1':'Leasing','2':'credit Simple','3':'credit Automotriz','4':'Factoraje','5':'Linea credit simple'};
 
 			$.ajax({
 			  type: "GET",
@@ -200,17 +200,17 @@
 
 			function createplot(client_info){
 
-				var CLV=parseFloat(client_info.CLV.CLV_n);
-				var CV=parseFloat(client_info.CLV.CV_n);
-				var R=parseFloat(client_info.RFM.R_n);
-				var F=parseFloat(client_info.RFM.F_n);
-				var M=parseFloat(client_info.RFM.M_n);
+				var clv=parseFloat(client_info.clv.clv_n);
+				var cv=parseFloat(client_info.clv.cv_n);
+				var R=parseFloat(client_info.rfm.r_n);
+				var F=parseFloat(client_info.rfm.f_n);
+				var M=parseFloat(client_info.rfm.m_n);
 
 				data = [
 				  {
 				  type: 'scatterpolar',
-                  theta: ['CLV', 'Client Value','Recencia','Frecuencia','Monto','CLV'],
-				  r: [CLV, CV, R, F, M,CLV],
+                  theta: ['clv', 'Client Value','Recencia','Frecuencia','Monto','clv'],
+				  r: [clv, cv, R, F, M,clv],
 				  name: 'Group B',
 				  hoverinfo: 'theta',
                   fill: 'toself',
@@ -257,50 +257,50 @@
             }
 
 			function fillfields(client_info){
-                var cv=parseFloat(parseFloat(client_info.CLV.CV).toFixed(2)).toLocaleString('en');
+                var cv=parseFloat(parseFloat(client_info.clv.cv).toFixed(2)).toLocaleString('en');
                 cv=(cv.indexOf(".")==-1)? cv+='.00':cv;
-                var clv=parseFloat(parseFloat(client_info.CLV.CLV).toFixed(2)).toLocaleString('en');
+                var clv=parseFloat(parseFloat(client_info.clv.clv).toFixed(2)).toLocaleString('en');
                 clv=(clv.indexOf(".")==-1)? clv+='.00':clv;
-                var Monto_seg=parseFloat(parseFloat(client_info.Credito.Monto_seg).toFixed(2)).toLocaleString('en');
-                Monto_seg=(Monto_seg.indexOf(".")==-1)? Monto_seg+='.00':Monto_seg;
-                var Monto_predict=parseFloat(parseFloat(client_info.Credito.Monto_predict).toFixed(2)).toLocaleString('en');
-                Monto_predict=(Monto_predict.indexOf(".")==-1)? Monto_predict+='.00':Monto_predict;
+                var amount_seg=parseFloat(parseFloat(client_info.credit.amount_seg).toFixed(2)).toLocaleString('en');
+                amount_seg=(amount_seg.indexOf(".")==-1)? amount_seg+='.00':amount_seg;
+                var amount_predict=parseFloat(parseFloat(client_info.credit.amount_predict).toFixed(2)).toLocaleString('en');
+                amount_predict=(amount_predict.indexOf(".")==-1)? amount_predict+='.00':amount_predict;
 
-                $('#Acreedor').val(client_info.Credito.Acreedor);
-                $('#Acreedor_prob').val(client_info.Credito.Acreedor_prob+'%');
-                $('#Monto_seg').val('$ '+Monto_seg);
-                $('#Monto_predict').val('$ '+Monto_predict);
-                if(client_info.Credito.Acreedor=='No'){
+                $('#creditor').val(client_info.credit.creditor);
+                $('#creditor_prob').val(client_info.credit.creditor_prob+'%');
+                $('#amount_seg').val('$ '+amount_seg);
+                $('#amount_predict').val('$ '+amount_predict);
+                if(client_info.credit.creditor=='No'){
                     $('#creditlineind').hide();
                     $('#creditlineseg').hide();
                 }
-				$('#R').val(client_info.RFM.R);
-                $('#F').val(client_info.RFM.F);
-                $('#M').val(client_info.RFM.M);
-                $('#Segmento').val(client_info.RFM.Segmento);
-                $('#LifeTime').val(parseFloat(client_info.CLV.LifeTime).toFixed(2));
-                $('#CV').val('$ '+cv);
-                $('#CLV').val('$ '+clv);
-                $('#Product_Predict').val(client_info.NBO.Producto_Predict);
+				$('#R').val(client_info.rfm.r);
+                $('#F').val(client_info.rfm.f);
+                $('#M').val(client_info.rfm.m);
+                $('#segment').val(client_info.rfm.segment);
+                $('#lifetime').val(parseFloat(client_info.clv.lifeTime).toFixed(2));
+                $('#cv').val('$ '+cv);
+                $('#clv').val('$ '+clv);
+                $('#Product_predict').val(client_info.nbo.item_predict);
 
-                var productos=Object.keys(client_info.NBO);
+                var productos=Object.keys(client_info.nbo);
                 var numproductos=productos.length-1;
                 for (var i = 0; i < numproductos; i++) {
-                    var temp=parseFloat(client_info.NBO[productos[i]]);
+                    var temp=parseFloat(client_info.nbo[productos[i]]);
 
                     $('#productos tr:last').after('<tr><th scope="row">'+(i+1)+'</th><td class="tipo_producto">'+productos[i]+'</td><td>'+temp.toFixed(2)+'%</td></tr>');
                 }
 
-                var numcalls_predict=Object.keys(client_info.Calls.Predict).length;
+                var numcalls_predict=Object.keys(client_info.calls.predict).length;
                 for (var i = 0; i < numcalls_predict; i++) {
-                    //var temp=parseFloat(client_info.NBO['Producto_'+i]);
-                    $('#calls tr:last').after('<tr class="call_predict"><th scope="row">'+(i+1)+'</th><td>'+client_info.Calls.Predict[i].Nombre+'</td><td><p class="date_call">'+client_info.Calls.Predict[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls.Predict[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls.Predict[i].Venta+'</td><td>-</td></tr>');
+                    //var temp=parseFloat(client_info.nbo['Producto_'+i]);
+                    $('#calls tr:last').after('<tr class="call_predict"><th scope="row">'+(i+1)+'</th><td>'+client_info.calls.predict[i].name+'</td><td><p class="date_call">'+client_info.calls.predict[i].date_end+'</p></td><td><p class="status_call">'+client_info.calls.predict[i].status+'</p></td><td class="venta_call">'+client_info.calls.predict[i].sale+'</td><td>-</td></tr>');
                 }
 
-                var numcalls_crm=Object.keys(client_info.Calls.CRM).length;
+                var numcalls_crm=Object.keys(client_info.calls.crm).length;
                 for (var i = 0; i < numcalls_crm; i++) {
-                    //var temp=parseFloat(client_info.NBO['Producto_'+i]);
-                    $('#calls tr:last').after('<tr><th scope="row">'+(i+numcalls_predict+1)+'</th><td><a href="http://'+window.location.host+'/unifin/#Calls/'+client_info.Calls.CRM[i].Id_call+'" target="_parent">'+client_info.Calls.CRM[i].Nombre+'</a></td><td><p class="date_call">'+client_info.Calls.CRM[i].Date_end+'</p></td><td><p class="status_call">'+client_info.Calls.CRM[i].Estado+'</p></td><td class="venta_call">'+client_info.Calls.CRM[i].Venta+'</td><td class="producto_sold"><b>'+client_info.Calls.CRM[i].Producto_sold+'</b></td></tr>');
+                    //var temp=parseFloat(client_info.nbo['Producto_'+i]);
+                    $('#calls tr:last').after('<tr><th scope="row">'+(i+numcalls_predict+1)+'</th><td><a href="http://'+window.location.host+'/unifin/#calls/'+client_info.calls.crm[i].id_call+'" target="_parent">'+client_info.calls.crm[i].name+'</a></td><td><p class="date_call">'+client_info.calls.crm[i].date_end+'</p></td><td><p class="status_call">'+client_info.calls.crm[i].status+'</p></td><td class="venta_call">'+client_info.calls.crm[i].sale+'</td><td class="producto_sold"><b>'+client_info.calls.crm[i].item_sold+'</b></td></tr>');
                 }
 
                 $('.venta_call').each(function(){
